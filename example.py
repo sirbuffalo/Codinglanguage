@@ -43,3 +43,7 @@ parse = [
         ]
     }
 ]
+
+import interpreter
+interp = interpreter.Interpreter(parse)
+interp.run()
