@@ -1,6 +1,7 @@
 from math import ceil
 from glob import glob
 
+
 class Parser:
     def __init__(self, codetext, indent='    '):
         self.codetext = codetext
