@@ -20,14 +20,14 @@ class Interpreter:
 
         self._exprTypes = {
             'add': self._add,
-            'get var': self._getVar,
+            'get var': self._get_var,
             'int': self._int,
         }
 
         self._instrTypes = {
             'loop': self._loop,
             'print': self._print,
-            'set var': self._setVar,
+            'set var': self._set_var,
         }
 
         self._listTypes = {
@@ -48,8 +48,6 @@ class Interpreter:
         self._instrTypes[instr['type']](instr, vars)
 
     def _loop(self, instr, vars):
-        vars = dict(vars)
-
         for iter in self._list(instr['list'], vars):
             vars[instr['var']] = iter
             self._instrs(instr['code'], vars)
@@ -57,7 +55,7 @@ class Interpreter:
     def _print(self, instr, vars):
         print(self._expr(instr['value'], vars))
 
-    def _setVar(self, instr, vars):
+    def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
 
     def _list(self, lst, vars):
@@ -85,5 +83,5 @@ class Interpreter:
     def _int(self, expr, vars):
         return Int(expr['value'])
 
-    def _getVar(self, expr, vars):
+    def _get_var(self, expr, vars):
         return vars[expr['name']]
