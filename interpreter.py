@@ -14,12 +14,17 @@ class Int(Variable):
     def __init__(self, val):
         self.val = int(val)
 
+class Float(Variable):
+    def __init__(self, val):
+        self.val = float(val)
+
 class Interpreter:
     def __init__(self, ast):
         self._ast = ast
 
         self._exprTypes = {
             'add': self._add,
+            'float': self._float,
             'get var': self._get_var,
             'int': self._int,
         }
@@ -80,8 +85,11 @@ class Interpreter:
         num2 = self._expr(expr['num2'], vars)
         return Int(num1.val + num2.val)
 
-    def _int(self, expr, vars):
-        return Int(expr['value'])
+    def _float(self, expr, vars):
+        return Float(expr['value'])
 
     def _get_var(self, expr, vars):
         return vars[expr['name']]
+
+    def _int(self, expr, vars):
+        return Int(expr['value'])

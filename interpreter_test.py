@@ -7,14 +7,6 @@ class TestInterpreter(unittest.TestCase):
     def setUp(self):
         self._interp = interpreter.Interpreter([])
 
-    def test_expr_int(self):
-        res = self._interp._expr({
-            'type': 'int',
-            'value': 5,
-        }, {})
-
-        self.assertEqual(5, res.val)
-
     def test_expr_add(self):
         res = self._interp._expr({
             'type': 'add',
@@ -30,6 +22,14 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
+    def test_expr_float(self):
+        res = self._interp._expr({
+            'type': 'float',
+            'value': 1.5,
+        }, {})
+
+        self.assertEqual(1.5, res.val)
+
     def test_expr_get_var(self):
         res = self._interp._expr({
             'type': 'get var',
@@ -40,6 +40,14 @@ class TestInterpreter(unittest.TestCase):
                 'value': 5,
             }, {}),
         })
+
+        self.assertEqual(5, res.val)
+
+    def test_expr_int(self):
+        res = self._interp._expr({
+            'type': 'int',
+            'value': 5,
+        }, {})
 
         self.assertEqual(5, res.val)
 
