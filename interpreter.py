@@ -15,6 +15,9 @@ class Bool(Variable):
     def __init__(self, val):
         self.val = bool(val)
 
+    def xnot(self):
+        return Bool(not self.val)
+
 class Number(Variable):
     def add(self, other):
         return type(self)(self.val + other.val)
@@ -49,6 +52,7 @@ class Interpreter:
             'get var': self._get_var,
             'int': self._int,
             'mul': self._mul,
+            'not': self._not,
             'sub': self._sub,
         }
 
@@ -134,6 +138,10 @@ class Interpreter:
         num1 = self._expr(expr['num1'], vars)
         num2 = self._expr(expr['num2'], vars)
         return num1.mul(num2)
+
+    def _not(self, expr, vars):
+        num = self._expr(expr['num'], vars)
+        return num.xnot()
 
     def _sub(self, expr, vars):
         num1 = self._expr(expr['num1'], vars)

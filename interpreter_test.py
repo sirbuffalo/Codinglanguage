@@ -119,6 +119,17 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(12, res.val)
 
+    def test_expr_not(self):
+        res = self._interp._expr({
+            'type': 'not',
+            'num': {
+                'type': 'bool',
+                'value': False,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
     def test_expr_sub(self):
         res = self._interp._expr({
             'type': 'sub',
