@@ -1,6 +1,7 @@
 from math import ceil
 from glob import glob
 from re import search, split, findall
+import interpreter
 
 class Parser:
     def __init__(self, codetext, indent='    '):
@@ -27,44 +28,73 @@ class Parser:
 
     @classmethod
     def parse_expression(cls, expression):
-        current = ""
-        num_par = 0
-        new_expression = ""
-        replaces = []
+        expression = expression.strip()
+        splited = []
+        perrs = [splited]
+        current = ''
+        lasttype = None
         for char in expression:
+            if char == ' ':
+                if current != '':
+                    perrs[-1].append(current)
+                    current = ''
+                continue
+            if char in ['*', '/', '+', '-'] and lasttype != 'op':
+                if current:
+                    perrs[-1].append(current)
+                perrs[-1].append(char)
+                current = ''
+                lasttype = 'op'
+                continue
             if char == '(':
-                num_par += 1
+                if current:
+                    perrs[-1].append(current)
+                current = ''
+                newperr = []
+                perrs[-1].append(newperr)
+                perrs.append(newperr)
+                lasttype = 'openperr'
                 continue
             if char == ')':
-                num_par -= 1
-                if num_par == 0:
-                    new_expression += f'|:{len(replaces)}:|'
-                    replaces.append(cls.parse_expression(current))
-                    current = ""
-                continue
-            if 0 < num_par:
-                current += char
-                continue
-            new_expression += char
-        expression = new_expression
-        new_expression = ""
-        operator = None
-        num1 = ""
-        current = ""
-        for char in expression:
-            if char in ['*', '/', '+', '-']:
-                if operator:
-                    new_expression += f'|:{len(replaces)}:|'
-                    replaces.append({
-                        'type': operator,
-                        'num1': cls.parse_expression(num1),
-                        'num2': cls.parse_expression(current)
-                    })
-                num1 = current
+                if current:
+                    perrs[-1].append(current)
                 current = ''
-            if
+                perrs.pop()
+                lasttype = 'closeperr'
+                continue
+            try:
+                int(current + char)
+            except ValueError:
+                try:
+                    perrs[-1].append(str(int(current)))
+                    current = char
+                    lasttype = 'int'
+                    continue
+                except ValueError:
+                    pass
+            try:
+                float(current + char)
+            except ValueError:
+                try:
+                    perrs[-1].append(str(float(current)))
+                    current = ''
+                    lasttype = 'float'
+                    continue
+                except ValueError:
+                    pass
+            if search('^[a-zA-Z][a-zA-Z0-9]*$', current) and not search('^[a-zA-Z][a-zA-Z0-9]*$', current + char):
+                print(current, char)
+                perrs[-1].append(current)
+                current = ''
+                lasttype = 'var'
+            current += char
+        if current != '':
+            perrs[-1].append(current)
+        # ops = [i for i in range(len(splited)) if splited[i] in ['*', '/']]
+        # for i, index in enumerate(ops):
+        #     splited[index - i * 2 - 1:index - i * 2 + 1] = [[index - i * 2 - 1:index - i * 2 + 1]]
+        return splited
 
-        return None
 
 files = glob('*.🐮🦬')
 files.extend(glob('*.🦬🐮'))
@@ -73,3 +103,5 @@ files.extend(glob('*.cb'))
 files.extend(glob('*.fb'))
 for file in files:
     print(Parser(open(file).read()).parse())
+    # interp = interpreter.Interpreter(Parser(open(file).read()).parse())
+    # interp.run()

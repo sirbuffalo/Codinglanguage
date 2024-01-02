@@ -1,3 +1,1 @@
-times = 10.5
-for index of [1...times + 1]
-    print(index)
+times = (((1+1)*6))/3
