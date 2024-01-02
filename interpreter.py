@@ -8,7 +8,17 @@ class UnknownListType(Exception):
     pass
 
 class Variable:
-    pass
+    def add(self, other):
+        return type(self)(self.val + other.val)
+
+    def div(self, other):
+        return type(self)(self.val / other.val)
+
+    def mul(self, other):
+        return type(self)(self.val * other.val)
+
+    def sub(self, other):
+        return type(self)(self.val - other.val)
 
 class Int(Variable):
     def __init__(self, val):
@@ -24,9 +34,12 @@ class Interpreter:
 
         self._exprTypes = {
             'add': self._add,
+            'div': self._div,
             'float': self._float,
             'get var': self._get_var,
             'int': self._int,
+            'mul': self._mul,
+            'sub': self._sub,
         }
 
         self._instrTypes = {
@@ -83,7 +96,12 @@ class Interpreter:
     def _add(self, expr, vars):
         num1 = self._expr(expr['num1'], vars)
         num2 = self._expr(expr['num2'], vars)
-        return Int(num1.val + num2.val)
+        return num1.add(num2)
+
+    def _div(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.div(num2)
 
     def _float(self, expr, vars):
         return Float(expr['value'])
@@ -93,3 +111,13 @@ class Interpreter:
 
     def _int(self, expr, vars):
         return Int(expr['value'])
+
+    def _mul(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.mul(num2)
+
+    def _sub(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.sub(num2)

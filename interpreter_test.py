@@ -22,6 +22,21 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
+    def test_expr_div(self):
+        res = self._interp._expr({
+            'type': 'div',
+            'num1': {
+                'type': 'int',
+                'value': 12,
+            },
+            'num2': {
+                'type': 'int',
+                'value': 3,
+            },
+        }, {})
+
+        self.assertEqual(4, res.val)
+
     def test_expr_float(self):
         res = self._interp._expr({
             'type': 'float',
@@ -50,6 +65,36 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual(5, res.val)
+
+    def test_expr_mul(self):
+        res = self._interp._expr({
+            'type': 'mul',
+            'num1': {
+                'type': 'int',
+                'value': 3,
+            },
+            'num2': {
+                'type': 'int',
+                'value': 4,
+            },
+        }, {})
+
+        self.assertEqual(12, res.val)
+
+    def test_expr_sub(self):
+        res = self._interp._expr({
+            'type': 'sub',
+            'num1': {
+                'type': 'int',
+                'value': 10,
+            },
+            'num2': {
+                'type': 'int',
+                'value': 4,
+            },
+        }, {})
+
+        self.assertEqual(6, res.val)
 
     def test_instr_loop(self):
         vars = {
