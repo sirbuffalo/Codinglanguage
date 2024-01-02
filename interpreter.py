@@ -8,11 +8,36 @@ class UnknownListType(Exception):
     pass
 
 class Variable:
-    pass
+    def equal(self, other):
+        return Bool(self.val == other.val)
 
-class Int(Variable):
+class Bool(Variable):
+    def __init__(self, val):
+        self.val = bool(val)
+
+    def xnot(self):
+        return Bool(not self.val)
+
+class Number(Variable):
+    def add(self, other):
+        return type(self)(self.val + other.val)
+
+    def div(self, other):
+        return type(self)(self.val / other.val)
+
+    def mul(self, other):
+        return type(self)(self.val * other.val)
+
+    def sub(self, other):
+        return type(self)(self.val - other.val)
+
+class Int(Number):
     def __init__(self, val):
         self.val = int(val)
+
+class Float(Number):
+    def __init__(self, val):
+        self.val = float(val)
 
 class Interpreter:
     def __init__(self, ast):
@@ -20,14 +45,21 @@ class Interpreter:
 
         self._exprTypes = {
             'add': self._add,
-            'get var': self._getVar,
+            'bool': self._bool,
+            'div': self._div,
+            'equal': self._equal,
+            'float': self._float,
+            'get var': self._get_var,
             'int': self._int,
+            'mul': self._mul,
+            'not': self._not,
+            'sub': self._sub,
         }
 
         self._instrTypes = {
             'loop': self._loop,
             'print': self._print,
-            'set var': self._setVar,
+            'set var': self._set_var,
         }
 
         self._listTypes = {
@@ -48,8 +80,6 @@ class Interpreter:
         self._instrTypes[instr['type']](instr, vars)
 
     def _loop(self, instr, vars):
-        vars = dict(vars)
-
         for iter in self._list(instr['list'], vars):
             vars[instr['var']] = iter
             self._instrs(instr['code'], vars)
@@ -57,7 +87,7 @@ class Interpreter:
     def _print(self, instr, vars):
         print(self._expr(instr['value'], vars))
 
-    def _setVar(self, instr, vars):
+    def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
 
     def _list(self, lst, vars):
@@ -80,10 +110,40 @@ class Interpreter:
     def _add(self, expr, vars):
         num1 = self._expr(expr['num1'], vars)
         num2 = self._expr(expr['num2'], vars)
-        return Int(num1.val + num2.val)
+        return num1.add(num2)
+
+    def _bool(self, expr, vars):
+        return Bool(expr['value'])
+
+    def _div(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.div(num2)
+
+    def _equal(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.equal(num2)
+
+    def _float(self, expr, vars):
+        return Float(expr['value'])
+
+    def _get_var(self, expr, vars):
+        return vars[expr['name']]
 
     def _int(self, expr, vars):
         return Int(expr['value'])
 
-    def _getVar(self, expr, vars):
-        return vars[expr['name']]
+    def _mul(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.mul(num2)
+
+    def _not(self, expr, vars):
+        num = self._expr(expr['num'], vars)
+        return num.xnot()
+
+    def _sub(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.sub(num2)
