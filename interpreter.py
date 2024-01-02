@@ -8,6 +8,14 @@ class UnknownListType(Exception):
     pass
 
 class Variable:
+    def equal(self, other):
+        return Bool(self.val == other.val)
+
+class Bool(Variable):
+    def __init__(self, val):
+        self.val = bool(val)
+
+class Number(Variable):
     def add(self, other):
         return type(self)(self.val + other.val)
 
@@ -20,11 +28,11 @@ class Variable:
     def sub(self, other):
         return type(self)(self.val - other.val)
 
-class Int(Variable):
+class Int(Number):
     def __init__(self, val):
         self.val = int(val)
 
-class Float(Variable):
+class Float(Number):
     def __init__(self, val):
         self.val = float(val)
 
@@ -34,7 +42,9 @@ class Interpreter:
 
         self._exprTypes = {
             'add': self._add,
+            'bool': self._bool,
             'div': self._div,
+            'equal': self._equal,
             'float': self._float,
             'get var': self._get_var,
             'int': self._int,
@@ -98,10 +108,18 @@ class Interpreter:
         num2 = self._expr(expr['num2'], vars)
         return num1.add(num2)
 
+    def _bool(self, expr, vars):
+        return Bool(expr['value'])
+
     def _div(self, expr, vars):
         num1 = self._expr(expr['num1'], vars)
         num2 = self._expr(expr['num2'], vars)
         return num1.div(num2)
+
+    def _equal(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        num2 = self._expr(expr['num2'], vars)
+        return num1.equal(num2)
 
     def _float(self, expr, vars):
         return Float(expr['value'])

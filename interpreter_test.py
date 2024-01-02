@@ -22,6 +22,14 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
+    def test_expr_bool(self):
+        res = self._interp._expr({
+            'type': 'bool',
+            'value': True,
+        }, {})
+
+        self.assertEqual(True, res.val)
+
     def test_expr_div(self):
         res = self._interp._expr({
             'type': 'div',
@@ -36,6 +44,36 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual(4, res.val)
+
+    def test_expr_equal_false(self):
+        res = self._interp._expr({
+            'type': 'equal',
+            'num1': {
+                'type': 'int',
+                'value': 5,
+            },
+            'num2': {
+                'type': 'int',
+                'value': 6,
+            },
+        }, {})
+
+        self.assertEqual(False, res.val)
+
+    def test_expr_equal_true(self):
+        res = self._interp._expr({
+            'type': 'equal',
+            'num1': {
+                'type': 'int',
+                'value': 5,
+            },
+            'num2': {
+                'type': 'int',
+                'value': 5,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
 
     def test_expr_float(self):
         res = self._interp._expr({
