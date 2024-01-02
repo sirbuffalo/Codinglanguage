@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 from math import ceil
 from glob import glob
 from re import search, split, findall
