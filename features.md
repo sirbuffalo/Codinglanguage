@@ -64,12 +64,18 @@
 * [Wikipedia: Automatic parallelization](https://en.wikipedia.org/wiki/Automatic_parallelization)
 ### Protocols
 * [Swift protocols](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/protocols/)
+### Mid-Block Optional Unwrapping
+* [Swift `guard` optional unwrapping](https://www.hackingwithswift.com/sixty/10/3/unwrapping-with-guard)
+### `if` Optional Unwrapping
+* [Swift `if let` optional unwrapping](https://www.hackingwithswift.com/sixty/10/2/unwrapping-optionals)
 ### Any Type
 * [Go `any`](https://medium.com/@curiousinquirer/gos-any-the-type-that-can-hold-anything-2d0528b1133)
 ### Automatic Named Tuple Types
 * [Swift tuples](https://abhimuralidharan.medium.com/tuple-in-swift-a9ddeb314c79)
 ### Argument Name Overloading
 * [Swift argument name overloading](https://www.includehelp.com/swift/implement-function-overloading-based-on-argument-label.aspx)
+### Transparent Context / Task Local Variables
+* [Swift task local values](https://www.hackingwithswift.com/quick-start/concurrency/how-to-create-and-use-task-local-values)
 ## Bad
 ### Explicit `async`/`await`
 * Should be automatic like Go
@@ -81,6 +87,9 @@
 ### Explicit range
 * Should be automatic like [Swift](https://developer.apple.com/documentation/swift/range)
 * [Go `range`](https://go.dev/tour/moretypes/16)
+### Explicit context
+* Should be automatic like [Swift](https://www.hackingwithswift.com/quick-start/concurrency/how-to-create-and-use-task-local-values)
+* [Go `context`](https://pkg.go.dev/context)
 ### Getters & Setters
 * Function calls should look like function calls
 * [Swift computed properties](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/properties/#Computed-Properties)
