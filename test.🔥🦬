@@ -1,2 +1,4 @@
-times = 5
-print(times)
+x = 1
+for i of [1...8]
+    x = x * i
+print(x)

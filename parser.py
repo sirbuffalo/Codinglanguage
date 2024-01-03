@@ -2,7 +2,7 @@
 
 from math import ceil
 from glob import glob
-from re import search, split, findall
+from re import *
 import interpreter
 
 class Parser:
@@ -13,29 +13,47 @@ class Parser:
 
     def parse(self):
         self.parsed = []
+        spot = [self.parsed]
+        last_indent = 0
         for line in self.codetext.split('\n'):
             indention = 0
             for _ in range(ceil(len(line) / len(self.indent)-1)):
                 if line[indention * len(self.indent):(indention + 1) * len(self.indent)] != self.indent:
                     break
                 indention += 1
+            del spot[indention+1:]
             line = line[indention * len(self.indent):]
             if search("^[a-zA-Z][a-zA-Z0-9]* *=", line):
-                self.parsed.append({
+                spot[-1].append({
                     'type': 'set var',
                     'name':  findall("^[a-zA-Z][a-zA-Z0-9]* *=", line)[0][:-2].strip(),
                     'value': Parser.parse_expression(split("^[a-zA-Z][a-zA-Z0-9]* *=", line, 1)[1].strip())
                 })
             elif search('^print\(.*\)$', line):
-                self.parsed.append({
+                spot[-1].append({
                     'type': 'print',
                     'value': Parser.parse_expression(line[6:-1])
                 })
+            elif search('for +[a-zA-Z][a-zA-Z0-9]* +of +', line):
+                new_spot = []
+                spot[-1].append({
+                    'type': 'loop',
+                    'var': sub('(^for +| +of +.+)', '', line),
+                    'list': Parser.parse_expression(sub('for +[a-zA-Z][a-zA-Z0-9]* +of +', '', line, 1)),
+                    'code': new_spot
+                })
+                spot.append(new_spot)
         return self.parsed
 
     @classmethod
     def parse_expression(cls, expression):
         expression = expression.strip()
+        if expression[0] == '[' and expression[-1] == ']':
+            return {
+                'type': 'range',
+                'start': cls.parse_expression(expression[1:expression.find('...')]),
+                'end': cls.parse_expression(expression[expression.find('...') + 3:-1])
+            }
         splited = []
         perrs = [splited]
         current = ''
@@ -133,6 +151,7 @@ class Parser:
             'num1': cls.parse_symbol(equation_list[0]),
             'num2': cls.parse_symbol(equation_list[2])
         }
+
     @classmethod
     def parse_symbol(cls, symbol):
         symbol_type = type(symbol).__name__
@@ -165,6 +184,6 @@ files.extend(glob('*.🔥🦬'))
 files.extend(glob('*.cb'))
 files.extend(glob('*.fb'))
 for file in files:
-    # print(Parser(open(file).read()).parse())
+    print(Parser(open(file).read()).parse())
     interp = interpreter.Interpreter(Parser(open(file).read()).parse())
     interp.run()
