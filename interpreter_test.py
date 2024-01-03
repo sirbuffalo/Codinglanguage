@@ -465,6 +465,81 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(45, vars['test1'].val)
 
+    def test_instr_loop_list(self):
+        vars = {}
+
+        # test1 = [3, 4]
+        # test2 = 0
+        # for i in test1:
+        #   test2 += i
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'list',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 4,
+                },
+            },
+            {
+                'type': 'set var',
+                'name': 'test2',
+                'value': {
+                    'type': 'int',
+                    'value': 0,
+                },
+            },
+            {
+                'type': 'loop',
+                'var': 'i',
+                'list': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'code': [
+                    {
+                        'type': 'set var',
+                        'name': 'test2',
+                        'value': {
+                            'type': 'add',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test2',
+                            },
+                            'value2': {
+                                'type': 'get var',
+                                'name': 'i',
+                            },
+                        },
+                    },
+                ],
+            },
+        ], vars)
+
+        self.assertEqual(7, vars['test2'].val)
+
     def test_instr_equation(self):
         vars = {}
 
