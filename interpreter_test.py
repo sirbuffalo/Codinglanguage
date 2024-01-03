@@ -186,7 +186,40 @@ class TestInterpreter(unittest.TestCase):
             ],
         }, vars)
 
-        self.assertEqual(20, vars['test1'].val)
+    def test_instr_equation(self):
+        vars = {}
+
+        self._interp._instr({
+			'type': 'set var',
+            'name': 'times',
+            'value': {
+                'type': 'div',
+                'num1': {
+                    'type': 'mul',
+                    'num1': {
+                        'type': 'add',
+                        'num1': {
+                            'type': 'int',
+                            'value': 1,
+                         },
+                        'num2': {
+                            'type': 'int',
+                            'value': 1,
+                        },
+                    },
+                    'num2': {
+                        'type': 'int',
+                        'value': 6,
+                    },
+                },
+                'num2': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+        }, vars)
+
+        self.assertEqual(4, vars['times'].val)
 
 
 if __name__ == '__main__':
