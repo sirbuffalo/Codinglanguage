@@ -24,6 +24,40 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
+    def test_expr_and_false(self):
+        # true and false
+
+        res = self._interp._expr({
+            'type': 'and',
+            'num1': {
+                'type': 'bool',
+                'value': True,
+            },
+            'num2': {
+                'type': 'bool',
+                'value': False,
+            },
+        }, {})
+
+        self.assertEqual(False, res.val)
+
+    def test_expr_and_true(self):
+        # true and true
+
+        res = self._interp._expr({
+            'type': 'and',
+            'num1': {
+                'type': 'bool',
+                'value': True,
+            },
+            'num2': {
+                'type': 'bool',
+                'value': True,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
     def test_expr_bool(self):
         # true
 
@@ -146,6 +180,50 @@ class TestInterpreter(unittest.TestCase):
                 'type': 'bool',
                 'value': False,
             },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
+    def test_expr_or_false(self):
+        # false or false
+
+        res = self._interp._expr({
+            'type': 'or',
+            'num1': {
+                'type': 'bool',
+                'value': False,
+            },
+            'num2': {
+                'type': 'bool',
+                'value': False,
+            },
+        }, {})
+
+        self.assertEqual(False, res.val)
+
+    def test_expr_or_true(self):
+        # true or false
+
+        res = self._interp._expr({
+            'type': 'or',
+            'num1': {
+                'type': 'bool',
+                'value': True,
+            },
+            'num2': {
+                'type': 'bool',
+                'value': False,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
+    def test_expr_bool(self):
+        # true
+
+        res = self._interp._expr({
+            'type': 'bool',
+            'value': True,
         }, {})
 
         self.assertEqual(True, res.val)

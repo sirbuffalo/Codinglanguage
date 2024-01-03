@@ -45,6 +45,7 @@ class Interpreter:
 
         self._exprTypes = {
             'add': self._add,
+            'and': self._and,
             'bool': self._bool,
             'div': self._div,
             'equal': self._equal,
@@ -53,6 +54,7 @@ class Interpreter:
             'int': self._int,
             'mul': self._mul,
             'not': self._not,
+            'or': self._or,
             'sub': self._sub,
         }
 
@@ -122,6 +124,13 @@ class Interpreter:
         num2 = self._expr(expr['num2'], vars)
         return num1.add(num2)
 
+    def _and(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        if not num1.val:
+            return Bool(False)
+        num2 = self._expr(expr['num2'], vars)
+        return Bool(num1.val and num2.val)
+
     def _bool(self, expr, vars):
         return Bool(expr['value'])
 
@@ -152,6 +161,13 @@ class Interpreter:
     def _not(self, expr, vars):
         num = self._expr(expr['num'], vars)
         return num.xnot()
+
+    def _or(self, expr, vars):
+        num1 = self._expr(expr['num1'], vars)
+        if num1.val:
+            return Bool(True)
+        num2 = self._expr(expr['num2'], vars)
+        return Bool(num1.val or num2.val)
 
     def _sub(self, expr, vars):
         num1 = self._expr(expr['num1'], vars)
