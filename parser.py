@@ -5,6 +5,30 @@ from glob import glob
 from re import *
 import interpreter
 
+
+class Operation:
+    def __init__(self, operation, *values):
+        self.operation = operation
+        self.values = values
+
+    def make_json(self):
+        ans = {
+            'type': {
+                '*': 'mul',
+                '/': 'div',
+                '+': 'add',
+                '-': 'sub',
+                'not': 'not',
+                'and': 'and',
+                'or': 'or'
+            }[self.operation]
+        }
+        if len(self.values) == 1:
+            ans['value'] = self.values[0]
+        else:
+            for i in range(len(self.values)):
+                ans['value'+str(i+1)] = self.values[i]
+
 class Parser:
     def __init__(self, codetext, indent='    '):
         self.codetext = codetext
@@ -109,6 +133,12 @@ class Parser:
                     pass
             except TypeError:
                 pass
+            try:
+                perrs[-1].append(str(bool(current)))
+                current = char
+                continue
+            except ValueError:
+                pass
             if search('^[a-zA-Z][a-zA-Z0-9]*$', current) and not search('^[a-zA-Z][a-zA-Z0-9]*$', current + char):
                 perrs[-1].append(current)
                 current = ''
@@ -120,6 +150,8 @@ class Parser:
     @classmethod
     def add_extra_parentheses(cls, equation_original):
         equation = equation_original.copy()
+        if len(equation) == 1 and type(equation[0]).__name__ == 'list':
+            return cls.add_extra_parentheses(equation[0])
         ops = [i for i in range(len(equation)) if equation[i] in ['*', '/']]
         for i, index in enumerate(ops):
             if type(equation[index - i * 2 - 1]).__name__ == 'list':
@@ -140,6 +172,7 @@ class Parser:
     def equation_list_to_json(cls, equation_list):
         if type(equation_list).__name__ == 'str':
             return cls.parse_symbol(equation_list)
+        # print(equation_list, len(equation_list))
         operand = {
             '*': 'mul',
             '/': 'div',
