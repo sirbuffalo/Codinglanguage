@@ -8,6 +8,8 @@ class TestInterpreter(unittest.TestCase):
         self._interp = interpreter.Interpreter([])
 
     def test_expr_add(self):
+        # 3 + 4
+
         res = self._interp._expr({
             'type': 'add',
             'num1': {
@@ -23,6 +25,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(7, res.val)
 
     def test_expr_bool(self):
+        # true
+
         res = self._interp._expr({
             'type': 'bool',
             'value': True,
@@ -31,6 +35,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(True, res.val)
 
     def test_expr_div(self):
+        # 12 / 3
+
         res = self._interp._expr({
             'type': 'div',
             'num1': {
@@ -46,6 +52,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(4, res.val)
 
     def test_expr_equal_false(self):
+        # 5 == 6
+
         res = self._interp._expr({
             'type': 'equal',
             'num1': {
@@ -61,6 +69,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(False, res.val)
 
     def test_expr_equal_true(self):
+        # 5 == 5
+
         res = self._interp._expr({
             'type': 'equal',
             'num1': {
@@ -76,6 +86,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(True, res.val)
 
     def test_expr_float(self):
+        # 1.5
+
         res = self._interp._expr({
             'type': 'float',
             'value': 1.5,
@@ -84,6 +96,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(1.5, res.val)
 
     def test_expr_get_var(self):
+        # test1
+
         res = self._interp._expr({
             'type': 'get var',
             'name': 'test1',
@@ -97,6 +111,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(5, res.val)
 
     def test_expr_int(self):
+        # 5
+
         res = self._interp._expr({
             'type': 'int',
             'value': 5,
@@ -105,6 +121,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(5, res.val)
 
     def test_expr_mul(self):
+        # 3 * 4
+
         res = self._interp._expr({
             'type': 'mul',
             'num1': {
@@ -120,6 +138,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(12, res.val)
 
     def test_expr_not(self):
+        # !false
+
         res = self._interp._expr({
             'type': 'not',
             'num': {
@@ -131,6 +151,8 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(True, res.val)
 
     def test_expr_sub(self):
+        # 10 - 4
+
         res = self._interp._expr({
             'type': 'sub',
             'num1': {
@@ -145,6 +167,133 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, res.val)
 
+    def test_instr_if_equal_true(self):
+        vars = {}
+
+        # test1 = 5
+        # if test1 == 5:
+        #   test1 *= 2
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 5,
+                },
+            },
+            {
+                'type': 'if',
+                'cond': {
+                    'type': 'equal',
+                    'num1': {
+                        'type': 'get var',
+                        'name': 'test1',
+                    },
+                    'num2': {
+                        'type': 'int',
+                        'value': 5,
+                    },
+                },
+                'code': [
+                    {
+                        'type': 'set var',
+                        'name': 'test1',
+                        'value': {
+                            'type': 'mul',
+                            'num1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'num2': {
+                                'type': 'int',
+                                'value': 2,
+                            },
+                        },
+                    },
+                ],
+            },
+        ], vars)
+
+        self.assertEqual(10, vars['test1'].val)
+
+    def test_instr_if_false(self):
+        vars = {}
+
+        # if false:
+        #   result = 5
+        # else:
+        #   result = 8
+
+        self._interp._instr({
+            'type': 'if',
+            'cond': {
+                'type': 'bool',
+                'value': False,
+            },
+            'code': [
+                {
+                    'type': 'set var',
+                    'name': 'result',
+                    'value': {
+                        'type': 'int',
+                        'value': 5,
+                    },
+                },
+            ],
+            'else': [
+                {
+                    'type': 'set var',
+                    'name': 'result',
+                    'value': {
+                        'type': 'int',
+                        'value': 8,
+                    },
+                },
+            ],
+        }, vars)
+
+        self.assertEqual(8, vars['result'].val)
+
+    def test_instr_if_true(self):
+        vars = {}
+
+        # if true:
+        #   result = 5
+        # else:
+        #   result = 8
+
+        self._interp._instr({
+            'type': 'if',
+            'cond': {
+                'type': 'bool',
+                'value': True,
+            },
+            'code': [
+                {
+                    'type': 'set var',
+                    'name': 'result',
+                    'value': {
+                        'type': 'int',
+                        'value': 5,
+                    },
+                },
+            ],
+            'else': [
+                {
+                    'type': 'set var',
+                    'name': 'result',
+                    'value': {
+                        'type': 'int',
+                        'value': 8,
+                    },
+                },
+            ],
+        }, vars)
+
+        self.assertEqual(5, vars['result'].val)
+
     def test_instr_loop(self):
         vars = {
             'test1': self._interp._expr({
@@ -152,6 +301,9 @@ class TestInterpreter(unittest.TestCase):
                 'value': 0,
             }, {})
         }
+
+        # for i in 0..10:
+        #   test1 += i
 
         self._interp._instr({
             'type': 'loop',
@@ -190,6 +342,8 @@ class TestInterpreter(unittest.TestCase):
 
     def test_instr_equation(self):
         vars = {}
+
+        # times = (((1+1)*6)/3)
 
         self._interp._instr({
 			'type': 'set var',

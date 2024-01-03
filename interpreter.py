@@ -57,6 +57,7 @@ class Interpreter:
         }
 
         self._instrTypes = {
+            'if': self._if,
             'loop': self._loop,
             'print': self._print,
             'set var': self._set_var,
@@ -78,6 +79,14 @@ class Interpreter:
             raise UnknownInstructionType(instr['type'])
 
         self._instrTypes[instr['type']](instr, vars)
+
+    def _if(self, instr, vars):
+        expr = self._expr(instr['cond'], vars)
+
+        if expr.val:
+            self._instrs(instr['code'], vars)
+        elif 'else' in instr:
+            self._instrs(instr['else'], vars)
 
     def _loop(self, instr, vars):
         for iter in self._list(instr['list'], vars):
