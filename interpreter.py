@@ -39,6 +39,9 @@ class List(Iterable):
     def append(self, value):
         self.val.append(value)
 
+    def len(self):
+        return Int(len(self.val))
+
     def subscript(self, index):
         return self.val[index.val]
 
@@ -86,6 +89,7 @@ class Interpreter:
             'float': self._float,
             'get var': self._get_var,
             'int': self._int,
+            'len': self._len,
             'list': self._list,
             'mul': self._mul,
             'not': self._not,
@@ -177,6 +181,10 @@ class Interpreter:
 
     def _int(self, expr, vars):
         return Int(expr['value'])
+
+    def _len(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        return target.len()
 
     def _list(self, expr, vars):
         return List()

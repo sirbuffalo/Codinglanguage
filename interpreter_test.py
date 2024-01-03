@@ -154,6 +154,57 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(5, res.val)
 
+    def test_expr_len(self):
+        vars = {}
+
+        # test1 = [3,4]
+        # test2 = test.len()
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'list',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 4,
+                },
+            },
+            {
+                'type': 'set var',
+                'name': 'test2',
+                'value': {
+                    'type': 'len',
+                    'target': {
+                        'type': 'get var',
+                        'name': 'test1',
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual(2, vars['test2'].val)
+
     def test_expr_mul(self):
         # 3 * 4
 
