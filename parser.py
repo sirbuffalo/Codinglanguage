@@ -24,6 +24,11 @@ class Parser:
                     'name':  findall("^[a-zA-Z][a-zA-Z0-9]* *=", line)[0][:-2].strip(),
                     'value': Parser.parse_expression(split("^[a-zA-Z][a-zA-Z0-9]* *=", line, 1)[1].strip())
                 })
+            elif search('^print\(.*\)$', line):
+                self.parsed.append({
+                    'type': 'print',
+                    'value': Parser.parse_expression(line[6:-1])
+                })
         return self.parsed
 
     @classmethod
@@ -32,19 +37,21 @@ class Parser:
         splited = []
         perrs = [splited]
         current = ''
-        lasttype = None
-        for char in expression:
+        last_op = -5
+        i = -1
+        for i, char in enumerate(expression):
             if char == ' ':
                 if current != '':
                     perrs[-1].append(current)
                     current = ''
                 continue
-            if char in ['*', '/', '+', '-'] and lasttype != 'op':
+            i += 1
+            if char in ['*', '/', '+', '-'] and last_op + 1 < i and 1 < i:
                 if current:
                     perrs[-1].append(current)
                 perrs[-1].append(char)
                 current = ''
-                lasttype = 'op'
+                last_op = i
                 continue
             if char == '(':
                 if current:
@@ -53,14 +60,12 @@ class Parser:
                 newperr = []
                 perrs[-1].append(newperr)
                 perrs.append(newperr)
-                lasttype = 'openperr'
                 continue
             if char == ')':
                 if current:
                     perrs[-1].append(current)
                 current = ''
                 perrs.pop()
-                lasttype = 'closeperr'
                 continue
             try:
                 int(current + char)
@@ -68,33 +73,89 @@ class Parser:
                 try:
                     perrs[-1].append(str(int(current)))
                     current = char
-                    lasttype = 'int'
                     continue
                 except ValueError:
                     pass
+            except TypeError:
+                pass
             try:
                 float(current + char)
             except ValueError:
                 try:
                     perrs[-1].append(str(float(current)))
-                    current = ''
-                    lasttype = 'float'
+                    current = char
                     continue
                 except ValueError:
                     pass
+            except TypeError:
+                pass
             if search('^[a-zA-Z][a-zA-Z0-9]*$', current) and not search('^[a-zA-Z][a-zA-Z0-9]*$', current + char):
-                print(current, char)
                 perrs[-1].append(current)
                 current = ''
-                lasttype = 'var'
             current += char
         if current != '':
             perrs[-1].append(current)
-        # ops = [i for i in range(len(splited)) if splited[i] in ['*', '/']]
-        # for i, index in enumerate(ops):
-        #     splited[index - i * 2 - 1:index - i * 2 + 1] = [[index - i * 2 - 1:index - i * 2 + 1]]
-        return splited
+        return cls.equation_list_to_json(cls.add_extra_parentheses(splited))
 
+    @classmethod
+    def add_extra_parentheses(cls, equation_original):
+        equation = equation_original.copy()
+        ops = [i for i in range(len(equation)) if equation[i] in ['*', '/']]
+        for i, index in enumerate(ops):
+            if type(equation[index - i * 2 - 1]).__name__ == 'list':
+                equation[index - i * 2 - 1] = cls.add_extra_parentheses(equation[index - i * 2 - 1])
+            if type(equation[index - i * 2 + 1]).__name__ == 'list':
+                equation[index - i * 2 + 1] = cls.add_extra_parentheses(equation[index - i * 2 + 1])
+            equation[index - i * 2 - 1:index - i * 2 + 2] = [equation[index - i * 2 - 1:index - i * 2 + 2]]
+        ops = [i for i in range(len(equation)) if equation[i] in ['+', '-']]
+        for i, index in enumerate(ops):
+            if type(equation[index - i * 2 - 1]).__name__ == 'list':
+                equation[index - i * 2 - 1] = cls.add_extra_parentheses(equation[index - i * 2 - 1])
+            if type(equation[index - i * 2 + 1]).__name__ == 'list':
+                equation[index - i * 2 + 1] = cls.add_extra_parentheses(equation[index - i * 2 + 1])
+            equation[index - i * 2 - 1:index - i * 2 + 2] = [equation[index - i * 2 - 1:index - i * 2 + 2]]
+        return equation[0]
+
+    @classmethod
+    def equation_list_to_json(cls, equation_list):
+        if type(equation_list).__name__ == 'str':
+            return cls.parse_symbol(equation_list)
+        operand = {
+            '*': 'mul',
+            '/': 'div',
+            '+': 'add',
+            '-': 'sub'
+        }[equation_list[1]]
+        return {
+            'type': operand,
+            'num1': cls.parse_symbol(equation_list[0]),
+            'num2': cls.parse_symbol(equation_list[2])
+        }
+    @classmethod
+    def parse_symbol(cls, symbol):
+        symbol_type = type(symbol).__name__
+        if symbol_type == 'list':
+            return cls.equation_list_to_json(symbol)
+        elif symbol_type == 'str':
+            try:
+                return {
+                    'type': 'int',
+                    'value': int(symbol)
+                }
+            except ValueError:
+                try:
+                    return {
+                        'type': 'float',
+                        'value': float(symbol)
+                    }
+                except ValueError:
+                    if search('^[a-zA-Z][a-zA-Z0-9]*$', symbol):
+                        return {
+                            'type': 'get var',
+                            'name': symbol
+                        }
+                    else:
+                        print('?')
 
 files = glob('*.🐮🦬')
 files.extend(glob('*.🦬🐮'))
@@ -102,6 +163,6 @@ files.extend(glob('*.🔥🦬'))
 files.extend(glob('*.cb'))
 files.extend(glob('*.fb'))
 for file in files:
-    print(Parser(open(file).read()).parse())
-    # interp = interpreter.Interpreter(Parser(open(file).read()).parse())
-    # interp.run()
+    # print(Parser(open(file).read()).parse())
+    interp = interpreter.Interpreter(Parser(open(file).read()).parse())
+    interp.run()
