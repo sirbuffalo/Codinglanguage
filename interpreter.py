@@ -4,9 +4,6 @@ class UnknownExpressionType(Exception):
 class UnknownInstructionType(Exception):
     pass
 
-class UnknownListType(Exception):
-    pass
-
 class Variable:
     def equal(self, other):
         return Bool(self.val == other.val)
@@ -24,12 +21,27 @@ class Bool(Variable):
     def or_(self, other):
         return Bool(self.val or other.val)
 
-class List(Variable):
+class Iterable(Variable):
+    pass
+
+class List(Iterable):
     def __init__(self):
         self.val = []
 
+    def iterate(self):
+        return self.val
+
     def append(self, value):
         self.val.append(value)
+
+class Range(Iterable):
+    def __init__(self, start, end):
+        self._start = start
+        self._end = end
+
+    def iterate(self):
+        for i in range(self._start.val, self._end.val):
+            yield Int(i)
 
 class Number(Variable):
     def add(self, other):
@@ -69,6 +81,7 @@ class Interpreter:
             'mul': self._mul,
             'not': self._not,
             'or': self._or,
+            'range': self._range,
             'sub': self._sub,
         }
 
@@ -78,10 +91,6 @@ class Interpreter:
             'loop': self._loop,
             'print': self._print,
             'set var': self._set_var,
-        }
-
-        self._listTypes = {
-            'range': self._range,
         }
 
     def run(self):
@@ -111,7 +120,7 @@ class Interpreter:
             self._instrs(instr['else'], vars)
 
     def _loop(self, instr, vars):
-        for iter in self._iterable(instr['list'], vars):
+        for iter in self._expr(instr['list'], vars).iterate():
             vars[instr['var']] = iter
             self._instrs(instr['code'], vars)
 
@@ -120,18 +129,6 @@ class Interpreter:
 
     def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
-
-    def _iterable(self, lst, vars):
-        if lst['type'] not in self._listTypes:
-            raise UnknownListType(lst['type'])
-
-        return self._listTypes[lst['type']](lst, vars)
-
-    def _range(self, lst, vars):
-        start = self._expr(lst['start'], vars)
-        end = self._expr(lst['end'], vars)
-        for i in range(start.val, end.val):
-            yield Int(i)
 
     def _expr(self, expr, vars):
         if expr['type'] not in self._exprTypes:
@@ -187,6 +184,11 @@ class Interpreter:
         v1 = self._expr(expr['value1'], vars)
         v2 = self._expr(expr['value2'], vars)
         return v1.or_(v2)
+
+    def _range(self, expr, vars):
+        start = self._expr(expr['start'], vars)
+        end = self._expr(expr['end'], vars)
+        return Range(start, end)
 
     def _sub(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
