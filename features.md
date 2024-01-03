@@ -50,7 +50,7 @@
 * Should propagate up automatically
   * Attempt to operate on an error value returns immediately with the same error
 ### Composable Errors
-* [Go ￼`errors.Join`￼](https://pkg.go.dev/errors#Join)
+* [Go `errors.Join`](https://pkg.go.dev/errors#Join)
 * [Go `errors.As`](https://pkg.go.dev/errors#As)
 ### List Comprehensions
 * [Python list comprehensions](https://docs.python.org/3/tutorial/datastructures.html#list-comprehensions)
