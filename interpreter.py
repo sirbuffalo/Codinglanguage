@@ -85,7 +85,7 @@ class Interpreter:
             self._instrs(instr['code'], vars)
 
     def _print(self, instr, vars):
-        print(self._expr(instr['value'], vars))
+        print(self._expr(instr['value'], vars).val)
 
     def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
