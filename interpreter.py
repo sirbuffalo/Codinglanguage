@@ -39,6 +39,9 @@ class List(Iterable):
     def append(self, value):
         self.val.append(value)
 
+    def insert(self, index, value):
+        self.val.insert(index.val, value)
+
     def len(self):
         return Int(len(self.val))
 
@@ -102,6 +105,7 @@ class Interpreter:
         self._instrTypes = {
             'append': self._append,
             'if': self._if,
+            'insert': self._insert,
             'loop': self._loop,
             'print': self._print,
             'set var': self._set_var,
@@ -122,8 +126,8 @@ class Interpreter:
 
     def _append(self, instr, vars):
         target = self._expr(instr['target'], vars)
-        v = self._expr(instr['value'], vars)
-        target.append(v)
+        value = self._expr(instr['value'], vars)
+        target.append(value)
 
     def _if(self, instr, vars):
         expr = self._expr(instr['cond'], vars)
@@ -132,6 +136,12 @@ class Interpreter:
             self._instrs(instr['code'], vars)
         elif 'else' in instr:
             self._instrs(instr['else'], vars)
+
+    def _insert(self, instr, vars):
+        target = self._expr(instr['target'], vars)
+        index = self._expr(instr['index'], vars)
+        value = self._expr(instr['value'], vars)
+        target.insert(index, value)
 
     def _loop(self, instr, vars):
         for iter in self._expr(instr['list'], vars).iterate():
@@ -195,8 +205,8 @@ class Interpreter:
         return v1.mul(v2)
 
     def _not(self, expr, vars):
-        v = self._expr(expr['value'], vars)
-        return v.not_()
+        value = self._expr(expr['value'], vars)
+        return value.not_()
 
     def _or(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)

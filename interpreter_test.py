@@ -519,6 +519,72 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(5, vars['result'].val)
 
+    def test_instr_insert(self):
+        vars = {}
+
+        # test1 = [3,4,5]
+        # test1.insert(1, 6)
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'list',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 4,
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 5,
+                },
+            },
+            {
+                'type': 'insert',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'index': {
+                    'type': 'int',
+                    'value': 1,
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 6,
+                },
+            },
+        ], vars)
+
+        self.assertEqual([3,6,4,5], [x.val for x in vars['test1'].iterate()])
+
     def test_instr_loop(self):
         vars = {}
 
