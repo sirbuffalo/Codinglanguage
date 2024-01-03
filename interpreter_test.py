@@ -295,48 +295,54 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(5, vars['result'].val)
 
     def test_instr_loop(self):
-        vars = {
-            'test1': self._interp._expr({
-                'type': 'int',
-                'value': 0,
-            }, {})
-        }
+        vars = {}
 
+        # test1 = 0
         # for i in 0..10:
         #   test1 += i
 
-        self._interp._instr({
-            'type': 'loop',
-            'var': 'i',
-            'list': {
-                'type': 'range',
-                'start': {
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
                     'type': 'int',
                     'value': 0,
                 },
-                'end': {
-                    'type': 'int',
-                    'value': 10,
-                },
             },
-            'code': [
-                {
-                    'type': 'set var',
-                    'name': 'test1',
-                    'value': {
-                        'type': 'add',
-                        'num1': {
-                            'type': 'get var',
-                            'name': 'test1',
-                        },
-                        'num2': {
-                            'type': 'get var',
-                            'name': 'i',
-                        },
+            {
+                'type': 'loop',
+                'var': 'i',
+                'list': {
+                    'type': 'range',
+                    'start': {
+                        'type': 'int',
+                        'value': 0,
+                    },
+                    'end': {
+                        'type': 'int',
+                        'value': 10,
                     },
                 },
-            ],
-        }, vars)
+                'code': [
+                    {
+                        'type': 'set var',
+                        'name': 'test1',
+                        'value': {
+                            'type': 'add',
+                            'num1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'num2': {
+                                'type': 'get var',
+                                'name': 'i',
+                            },
+                        },
+                    },
+                ],
+            },
+        ], vars)
 
         self.assertEqual(45, vars['test1'].val)
 
