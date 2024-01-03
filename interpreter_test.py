@@ -155,7 +155,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instr({
             'type': 'loop',
-            'var': '_',
+            'var': 'i',
             'list': {
                 'type': 'range',
                 'start': {
@@ -178,13 +178,15 @@ class TestInterpreter(unittest.TestCase):
                             'name': 'test1',
                         },
                         'num2': {
-                            'type': 'int',
-                            'value': 2,
+                            'type': 'get var',
+                            'name': 'i',
                         },
                     },
                 },
             ],
         }, vars)
+
+        self.assertEqual(45, vars['test1'].val)
 
     def test_instr_equation(self):
         vars = {}
