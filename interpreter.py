@@ -39,6 +39,10 @@ class List(Iterable):
     def append(self, value):
         self.val.append(value)
 
+    def subscript(self, index):
+        return self.val[index.val]
+
+
 class Range(Iterable):
     def __init__(self, start, end):
         self._start = start
@@ -88,6 +92,7 @@ class Interpreter:
             'or': self._or,
             'range': self._range,
             'sub': self._sub,
+            'subscript': self._subscript,
         }
 
         self._instrTypes = {
@@ -199,3 +204,8 @@ class Interpreter:
         v1 = self._expr(expr['value1'], vars)
         v2 = self._expr(expr['value2'], vars)
         return v1.sub(v2)
+
+    def _subscript(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        index = self._expr(expr['index'], vars)
+        return target.subscript(index)
