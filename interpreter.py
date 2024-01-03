@@ -24,6 +24,13 @@ class Bool(Variable):
     def or_(self, other):
         return Bool(self.val or other.val)
 
+class List(Variable):
+    def __init__(self):
+        self.val = []
+
+    def append(self, value):
+        self.val.append(value)
+
 class Number(Variable):
     def add(self, other):
         return type(self)(self.val + other.val)
@@ -58,6 +65,7 @@ class Interpreter:
             'float': self._float,
             'get var': self._get_var,
             'int': self._int,
+            'list': self._list,
             'mul': self._mul,
             'not': self._not,
             'or': self._or,
@@ -65,6 +73,7 @@ class Interpreter:
         }
 
         self._instrTypes = {
+            'append': self._append,
             'if': self._if,
             'loop': self._loop,
             'print': self._print,
@@ -88,6 +97,11 @@ class Interpreter:
 
         self._instrTypes[instr['type']](instr, vars)
 
+    def _append(self, instr, vars):
+        target = self._expr(instr['target'], vars)
+        v = self._expr(instr['value'], vars)
+        target.append(v)
+
     def _if(self, instr, vars):
         expr = self._expr(instr['cond'], vars)
 
@@ -97,7 +111,7 @@ class Interpreter:
             self._instrs(instr['else'], vars)
 
     def _loop(self, instr, vars):
-        for iter in self._list(instr['list'], vars):
+        for iter in self._iterable(instr['list'], vars):
             vars[instr['var']] = iter
             self._instrs(instr['code'], vars)
 
@@ -107,7 +121,7 @@ class Interpreter:
     def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
 
-    def _list(self, lst, vars):
+    def _iterable(self, lst, vars):
         if lst['type'] not in self._listTypes:
             raise UnknownListType(lst['type'])
 
@@ -156,6 +170,9 @@ class Interpreter:
 
     def _int(self, expr, vars):
         return Int(expr['value'])
+
+    def _list(self, expr, vars):
+        return List()
 
     def _mul(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)

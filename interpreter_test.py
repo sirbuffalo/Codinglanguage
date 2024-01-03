@@ -245,6 +245,47 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, res.val)
 
+    def test_instr_append(self):
+        vars = {}
+
+        # test1 = []
+        # test1.append(1)
+        # test1.append(2)
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'list',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 1,
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+        ], vars)
+
+        self.assertEqual([1, 2], [x.val for x in vars['test1'].val])
+
     def test_instr_if_equal_true(self):
         vars = {}
 
