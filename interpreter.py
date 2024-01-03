@@ -8,6 +8,9 @@ class Variable:
     def equal(self, other):
         return Bool(self.val == other.val)
 
+    def string(self):
+        return f'{self.val}'
+
 class Bool(Variable):
     def __init__(self, val):
         self.val = bool(val)
@@ -22,7 +25,9 @@ class Bool(Variable):
         return Bool(self.val or other.val)
 
 class Iterable(Variable):
-    pass
+    def string(self):
+        joined = ','.join(x.string() for x in self.iterate())
+        return f'[{joined}]'
 
 class List(Iterable):
     def __init__(self):
@@ -125,7 +130,7 @@ class Interpreter:
             self._instrs(instr['code'], vars)
 
     def _print(self, instr, vars):
-        print(self._expr(instr['value'], vars).val)
+        print(self._expr(instr['value'], vars).string())
 
     def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
