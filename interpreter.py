@@ -15,8 +15,14 @@ class Bool(Variable):
     def __init__(self, val):
         self.val = bool(val)
 
-    def xnot(self):
+    def and_(self, other):
+        return Bool(self.val and other.val)
+
+    def not_(self):
         return Bool(not self.val)
+
+    def or_(self, other):
+        return Bool(self.val or other.val)
 
 class Number(Variable):
     def add(self, other):
@@ -126,10 +132,8 @@ class Interpreter:
 
     def _and(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
-        if not v1.val:
-            return Bool(False)
         v2 = self._expr(expr['value2'], vars)
-        return Bool(v1.val and v2.val)
+        return v1.and_(v2)
 
     def _bool(self, expr, vars):
         return Bool(expr['value'])
@@ -160,14 +164,12 @@ class Interpreter:
 
     def _not(self, expr, vars):
         v = self._expr(expr['value'], vars)
-        return v.xnot()
+        return v.not_()
 
     def _or(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
-        if v1.val:
-            return Bool(True)
         v2 = self._expr(expr['value2'], vars)
-        return Bool(v2.val)
+        return v1.or_(v2)
 
     def _sub(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
