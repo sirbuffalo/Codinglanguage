@@ -23,11 +23,11 @@ parse = [
             },
             'end': {
                 'type': 'add',
-                'num1': {
+                'value1': {
                     'type': 'int',
                     'value': 1
                 },
-                'num2': {
+                'value2': {
                     'type': 'get var',
                     'name': 'times'
                 }

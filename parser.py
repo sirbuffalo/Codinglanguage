@@ -181,8 +181,8 @@ class Parser:
         }[equation_list[1]]
         return {
             'type': operand,
-            'num1': cls.parse_symbol(equation_list[0]),
-            'num2': cls.parse_symbol(equation_list[2])
+            'value1': cls.parse_symbol(equation_list[0]),
+            'value2': cls.parse_symbol(equation_list[2])
         }
 
     @classmethod

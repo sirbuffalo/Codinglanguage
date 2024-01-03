@@ -12,11 +12,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'add',
-            'num1': {
+            'value1': {
                 'type': 'int',
                 'value': 3,
             },
-            'num2': {
+            'value2': {
                 'type': 'int',
                 'value': 4,
             },
@@ -29,11 +29,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'and',
-            'num1': {
+            'value1': {
                 'type': 'bool',
                 'value': True,
             },
-            'num2': {
+            'value2': {
                 'type': 'bool',
                 'value': False,
             },
@@ -46,11 +46,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'and',
-            'num1': {
+            'value1': {
                 'type': 'bool',
                 'value': True,
             },
-            'num2': {
+            'value2': {
                 'type': 'bool',
                 'value': True,
             },
@@ -73,11 +73,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'div',
-            'num1': {
+            'value1': {
                 'type': 'int',
                 'value': 12,
             },
-            'num2': {
+            'value2': {
                 'type': 'int',
                 'value': 3,
             },
@@ -90,11 +90,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'equal',
-            'num1': {
+            'value1': {
                 'type': 'int',
                 'value': 5,
             },
-            'num2': {
+            'value2': {
                 'type': 'int',
                 'value': 6,
             },
@@ -107,11 +107,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'equal',
-            'num1': {
+            'value1': {
                 'type': 'int',
                 'value': 5,
             },
-            'num2': {
+            'value2': {
                 'type': 'int',
                 'value': 5,
             },
@@ -159,11 +159,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'mul',
-            'num1': {
+            'value1': {
                 'type': 'int',
                 'value': 3,
             },
-            'num2': {
+            'value2': {
                 'type': 'int',
                 'value': 4,
             },
@@ -176,7 +176,7 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'not',
-            'num': {
+            'value': {
                 'type': 'bool',
                 'value': False,
             },
@@ -189,11 +189,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'or',
-            'num1': {
+            'value1': {
                 'type': 'bool',
                 'value': False,
             },
-            'num2': {
+            'value2': {
                 'type': 'bool',
                 'value': False,
             },
@@ -206,11 +206,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'or',
-            'num1': {
+            'value1': {
                 'type': 'bool',
                 'value': True,
             },
-            'num2': {
+            'value2': {
                 'type': 'bool',
                 'value': False,
             },
@@ -233,11 +233,11 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._expr({
             'type': 'sub',
-            'num1': {
+            'value1': {
                 'type': 'int',
                 'value': 10,
             },
-            'num2': {
+            'value2': {
                 'type': 'int',
                 'value': 4,
             },
@@ -265,11 +265,11 @@ class TestInterpreter(unittest.TestCase):
                 'type': 'if',
                 'cond': {
                     'type': 'equal',
-                    'num1': {
+                    'value1': {
                         'type': 'get var',
                         'name': 'test1',
                     },
-                    'num2': {
+                    'value2': {
                         'type': 'int',
                         'value': 5,
                     },
@@ -280,11 +280,11 @@ class TestInterpreter(unittest.TestCase):
                         'name': 'test1',
                         'value': {
                             'type': 'mul',
-                            'num1': {
+                            'value1': {
                                 'type': 'get var',
                                 'name': 'test1',
                             },
-                            'num2': {
+                            'value2': {
                                 'type': 'int',
                                 'value': 2,
                             },
@@ -408,11 +408,11 @@ class TestInterpreter(unittest.TestCase):
                         'name': 'test1',
                         'value': {
                             'type': 'add',
-                            'num1': {
+                            'value1': {
                                 'type': 'get var',
                                 'name': 'test1',
                             },
-                            'num2': {
+                            'value2': {
                                 'type': 'get var',
                                 'name': 'i',
                             },
@@ -434,25 +434,25 @@ class TestInterpreter(unittest.TestCase):
             'name': 'times',
             'value': {
                 'type': 'div',
-                'num1': {
+                'value1': {
                     'type': 'mul',
-                    'num1': {
+                    'value1': {
                         'type': 'add',
-                        'num1': {
+                        'value1': {
                             'type': 'int',
                             'value': 1,
                          },
-                        'num2': {
+                        'value2': {
                             'type': 'int',
                             'value': 1,
                         },
                     },
-                    'num2': {
+                    'value2': {
                         'type': 'int',
                         'value': 6,
                     },
                 },
-                'num2': {
+                'value2': {
                     'type': 'int',
                     'value': 3,
                 },

@@ -120,29 +120,29 @@ class Interpreter:
         return self._exprTypes[expr['type']](expr, vars)
 
     def _add(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        num2 = self._expr(expr['num2'], vars)
-        return num1.add(num2)
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.add(v2)
 
     def _and(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        if not num1.val:
+        v1 = self._expr(expr['value1'], vars)
+        if not v1.val:
             return Bool(False)
-        num2 = self._expr(expr['num2'], vars)
-        return Bool(num1.val and num2.val)
+        v2 = self._expr(expr['value2'], vars)
+        return Bool(v1.val and v2.val)
 
     def _bool(self, expr, vars):
         return Bool(expr['value'])
 
     def _div(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        num2 = self._expr(expr['num2'], vars)
-        return num1.div(num2)
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.div(v2)
 
     def _equal(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        num2 = self._expr(expr['num2'], vars)
-        return num1.equal(num2)
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.equal(v2)
 
     def _float(self, expr, vars):
         return Float(expr['value'])
@@ -154,22 +154,22 @@ class Interpreter:
         return Int(expr['value'])
 
     def _mul(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        num2 = self._expr(expr['num2'], vars)
-        return num1.mul(num2)
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.mul(v2)
 
     def _not(self, expr, vars):
-        num = self._expr(expr['num'], vars)
-        return num.xnot()
+        v = self._expr(expr['value'], vars)
+        return v.xnot()
 
     def _or(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        if num1.val:
+        v1 = self._expr(expr['value1'], vars)
+        if v1.val:
             return Bool(True)
-        num2 = self._expr(expr['num2'], vars)
-        return Bool(num1.val or num2.val)
+        v2 = self._expr(expr['value2'], vars)
+        return Bool(v2.val)
 
     def _sub(self, expr, vars):
-        num1 = self._expr(expr['num1'], vars)
-        num2 = self._expr(expr['num2'], vars)
-        return num1.sub(num2)
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.sub(v2)
