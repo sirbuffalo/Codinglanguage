@@ -1,3 +1,5 @@
+#!/usr/bin/python3
+
 # example parse
 parse = [
     # setting times to 10

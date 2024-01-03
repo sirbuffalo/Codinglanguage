@@ -99,7 +99,8 @@ class Interpreter:
     def _range(self, lst, vars):
         start = self._expr(lst['start'], vars)
         end = self._expr(lst['end'], vars)
-        return range(start.val, end.val)
+        for i in range(start.val, end.val):
+            yield Int(i)
 
     def _expr(self, expr, vars):
         if expr['type'] not in self._exprTypes:
