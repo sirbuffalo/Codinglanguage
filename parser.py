@@ -5,29 +5,154 @@ from glob import glob
 from re import *
 import interpreter
 
+def error(text):
+    print('\033[91m' + text)
+    exit(1)
+
+class Var:
+    def __init__(self, name):
+        if not Var.vaild(name):
+            error(f'{name} is not a valid variable name')
+        self.name = name
+
+    def __dict__(self):
+        return {
+            'type': 'get var',
+            'name': self.name
+        }
+
+    @staticmethod
+    def valid(value):
+        return bool(search('^[a-zA-Z][a-zA-Z0-9]*$', value))
+
+
+class Int:
+    def __init__(self, value):
+        if not Int.valid(value):
+            error(f'{value} is not a valid int')
+        self.value = int(value)
+
+    def __dict__(self):
+        return {
+            'type': 'int',
+            'value': self.value
+        }
+
+    @staticmethod
+    def valid(value):
+        try:
+            int(value)
+            return True
+        except ValueError:
+            return False
+        except TypeError:
+            return False
+
+
+class Float:
+    def __init__(self, value):
+        if not Float.valid(value):
+            error(f'{value} is not a valid float')
+        self.value = float(value)
+
+    def __dict__(self):
+        return {
+            'type': 'float',
+            'value': self.value
+        }
+
+    @staticmethod
+    def valid(value):
+        try:
+            float(value)
+            return True
+        except ValueError:
+            return False
+        except TypeError:
+            return False
+
 
 class Operation:
+    operators = {
+        '*':{
+                'name': 'mul',
+                'types': [Int.valid, Float.valid, Var.valid]
+            },
+        '/': {
+                'name': 'div',
+                'types': [Int.valid, Float.valid, Var.valid]
+            },
+        '+': {
+                'name': 'add',
+                'types': [Int.valid, Float.valid, Var.valid]
+            },
+        '-': {
+                'name': 'sub',
+                'types': [Int.valid, Float.valid, Var.valid]
+            },
+        '=': {
+            'name': 'set var',
+            'type1': Var.valid,
+            'type2': [Int.valid, Float.valid, Var.valid]
+        },
+        '==': {
+            'name': 'equal',
+            'types': [Int.valid, Float.valid, Var.valid]
+        }
+    }
+
     def __init__(self, operation, *values):
         self.operation = operation
         self.values = values
 
-    def make_json(self):
+    def __dict__(self):
         ans = {
-            'type': {
-                '*': 'mul',
-                '/': 'div',
-                '+': 'add',
-                '-': 'sub',
-                'not': 'not',
-                'and': 'and',
-                'or': 'or'
-            }[self.operation]
+            'type': Operation.operators[self.operation]['name']
         }
         if len(self.values) == 1:
             ans['value'] = self.values[0]
         else:
             for i in range(len(self.values)):
                 ans['value'+str(i+1)] = self.values[i]
+
+    @staticmethod
+    def valid(operator, value1, value2):
+        data = Operation.operators[operator]
+        if 'types' in data:
+            for value in (value1, value2):
+                for validate in data['types']:
+                    if validate(value):
+                        break
+                else:
+                    return False
+        elif 'type' in data:
+            return data['type'](value1) and data['type'](value2)
+        elif 'type1' in data:
+            if not data['type'](value1):
+                return False
+            if 'type2' in data:
+                return data['type'](value2)
+            elif 'types2' in data:
+                for validate in data['types2']:
+                    if validate(value2):
+                        break
+                else:
+                    return False
+        elif 'types1' in data:
+            for validate in data['types']:
+                if validate(value1):
+                    break
+            else:
+                return False
+            if 'type2' in data:
+                return data['type'](value2)
+            elif 'types2' in data:
+                for validate in data['types2']:
+                    if validate(value2):
+                        break
+                else:
+                    return False
+        return True
 
 class Parser:
     def __init__(self, codetext, indent='    '):
@@ -132,12 +257,6 @@ class Parser:
                 except ValueError:
                     pass
             except TypeError:
-                pass
-            try:
-                perrs[-1].append(str(bool(current)))
-                current = char
-                continue
-            except ValueError:
                 pass
             if search('^[a-zA-Z][a-zA-Z0-9]*$', current) and not search('^[a-zA-Z][a-zA-Z0-9]*$', current + char):
                 perrs[-1].append(current)
