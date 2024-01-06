@@ -322,7 +322,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, res.val)
 
-    def test_expr_subscript(self):
+    def test_expr_subscript_list(self):
         vars = {}
 
         # test1 = [1,2]
@@ -376,6 +376,40 @@ class TestInterpreter(unittest.TestCase):
         ], vars)
 
         self.assertEqual(2, vars['test2'].val)
+
+    def test_expr_subscript_string(self):
+        vars = {}
+
+        # test1 = "bar"
+        # test2 = test[1]
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'string',
+                    'value': 'bar',
+                },
+            },
+            {
+                'type': 'set var',
+                'name': 'test2',
+                'value': {
+                    'type': 'subscript',
+                    'target': {
+                        'type': 'get var',
+                        'name': 'test1',
+                    },
+                    'index': {
+                        'type': 'int',
+                        'value': 1,
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual('a', vars['test2'].val)
 
     def test_instr_append(self):
         vars = {}
