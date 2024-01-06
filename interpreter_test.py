@@ -144,6 +144,61 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(5, res.val)
 
+    def test_expr_join(self):
+        vars = {}
+
+        # test1 = ["foo", "bar"]
+        # test2 = test1.join("X")
+
+        res = self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'list',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'string',
+                    'value': 'foo',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'string',
+                    'value': 'bar',
+                },
+            },
+            {
+                'type': 'set var',
+                'name': 'test2',
+                'value': {
+                    'type': 'join',
+                    'target': {
+                        'type': 'get var',
+                        'name': 'test1',
+                    },
+                    'value': {
+                        'type': 'string',
+                        'value': 'X',
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual("fooXbar", vars['test2'].val)
+
     def test_expr_int(self):
         # 5
 

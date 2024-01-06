@@ -98,6 +98,7 @@ class Interpreter:
             'float': self._float,
             'get var': self._get_var,
             'int': self._int,
+            'join': self._join,
             'len': self._len,
             'list': self._list,
             'mul': self._mul,
@@ -207,6 +208,11 @@ class Interpreter:
 
     def _int(self, expr, vars):
         return Int(int(self._expr(expr['value'], vars).val))
+
+    def _join(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        return String(value.val.join(x.val for x in target.iterate()))
 
     def _len(self, expr, vars):
         target = self._expr(expr['target'], vars)
