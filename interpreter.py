@@ -48,7 +48,6 @@ class List(Iterable):
     def subscript(self, index):
         return self.val[index.val]
 
-
 class Range(Iterable):
     def __init__(self, start, end):
         self._start = start
@@ -79,6 +78,10 @@ class Float(Number):
     def __init__(self, val):
         self.val = float(val)
 
+class String(Variable):
+    def __init__(self, val):
+        self.val = str(val)
+
 class Interpreter:
     def __init__(self, ast):
         self._ast = ast
@@ -98,6 +101,7 @@ class Interpreter:
             'not': self._not,
             'or': self._or,
             'range': self._range,
+            'string': self._string,
             'sub': self._sub,
             'subscript': self._subscript,
         }
@@ -217,6 +221,9 @@ class Interpreter:
         start = self._expr(expr['start'], vars)
         end = self._expr(expr['end'], vars)
         return Range(start, end)
+
+    def _string(self, expr, vars):
+        return String(expr['value'])
 
     def _sub(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)

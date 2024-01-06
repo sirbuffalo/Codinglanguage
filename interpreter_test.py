@@ -269,15 +269,15 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(True, res.val)
 
-    def test_expr_bool(self):
-        # true
+    def test_expr_string(self):
+        # "foo"
 
         res = self._interp._expr({
-            'type': 'bool',
-            'value': True,
+            'type': 'string',
+            'value': 'foo',
         }, {})
 
-        self.assertEqual(True, res.val)
+        self.assertEqual('foo', res.val)
 
     def test_expr_sub(self):
         # 10 - 4
@@ -749,7 +749,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(4, vars['times'].val)
 
-    def test_instr_print(self):
+    def test_instr_print_list(self):
         # test1 = []
         # test1.append(1)
         # test1.append(2)
@@ -783,6 +783,28 @@ class TestInterpreter(unittest.TestCase):
                 'value': {
                     'type': 'int',
                     'value': 2,
+                },
+            },
+            {
+                'type': 'print',
+                'value': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+            },
+        ], {})
+
+    def test_instr_print_string(self):
+        # test1 = "foo"
+        # print(test1)
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'string',
+                    'value': 'foo',
                 },
             },
             {
