@@ -104,6 +104,7 @@ class Interpreter:
             'mul': self._mul,
             'not': self._not,
             'or': self._or,
+            'pow': self._pow,
             'range': self._range,
             'string': self._string,
             'sub': self._sub,
@@ -234,6 +235,11 @@ class Interpreter:
         v1 = self._expr(expr['value1'], vars)
         v2 = self._expr(expr['value2'], vars)
         return v1.or_(v2)
+
+    def _pow(self, expr, vars):
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return self._expr(pow(v1.val, v2.val), vars)
 
     def _range(self, expr, vars):
         start = self._expr(expr['start'], vars)

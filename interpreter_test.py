@@ -337,6 +337,40 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(True, res.val)
 
+    def test_expr_pow_int(self):
+        # pow(2,4)
+
+        res = self._interp._expr({
+            'type': 'pow',
+            'value1': {
+                'type': 'int',
+                'value': 2,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 4,
+            },
+        }, {})
+
+        self.assertEqual(16, res.val)
+
+    def test_expr_pow_float(self):
+        # pow(1.5,2)
+
+        res = self._interp._expr({
+            'type': 'pow',
+            'value1': {
+                'type': 'float',
+                'value': 1.5,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 2,
+            },
+        }, {})
+
+        self.assertEqual(2.25, res.val)
+
     def test_expr_string(self):
         # "foo"
 
