@@ -154,6 +154,19 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(5, res.val)
 
+    def test_expr_int_from_string(self):
+        # int("5")
+
+        res = self._interp._expr({
+            'type': 'int',
+            'value': {
+                'type': 'string',
+                'value': '5',
+            },
+        }, {})
+
+        self.assertEqual(5, res.val)
+
     def test_expr_len(self):
         vars = {}
 
@@ -278,6 +291,19 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual('foo', res.val)
+
+    def test_expr_string_from_int(self):
+        # string(5)
+
+        res = self._interp._expr({
+            'type': 'string',
+            'value': {
+                'type': 'int',
+                'value': 5,
+            },
+        }, {})
+
+        self.assertEqual('5', res.val)
 
     def test_expr_sub(self):
         # 10 - 4
