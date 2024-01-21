@@ -144,12 +144,80 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(5, res.val)
 
+    def test_expr_join(self):
+        vars = {}
+
+        # test1 = ["foo", "bar"]
+        # test2 = test1.join("X")
+
+        res = self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'list',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'string',
+                    'value': 'foo',
+                },
+            },
+            {
+                'type': 'append',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'string',
+                    'value': 'bar',
+                },
+            },
+            {
+                'type': 'set var',
+                'name': 'test2',
+                'value': {
+                    'type': 'join',
+                    'target': {
+                        'type': 'get var',
+                        'name': 'test1',
+                    },
+                    'value': {
+                        'type': 'string',
+                        'value': 'X',
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual("fooXbar", vars['test2'].val)
+
     def test_expr_int(self):
         # 5
 
         res = self._interp._expr({
             'type': 'int',
             'value': 5,
+        }, {})
+
+        self.assertEqual(5, res.val)
+
+    def test_expr_int_from_string(self):
+        # int("5")
+
+        res = self._interp._expr({
+            'type': 'int',
+            'value': {
+                'type': 'string',
+                'value': '5',
+            },
         }, {})
 
         self.assertEqual(5, res.val)
@@ -204,6 +272,27 @@ class TestInterpreter(unittest.TestCase):
         ], vars)
 
         self.assertEqual(2, vars['test2'].val)
+
+    def test_expr_len_string(self):
+        vars = {}
+
+        # test1 = "foo".len()
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'len',
+                    'target': {
+                        'type': 'string',
+                        'value': 'foo',
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual(3, vars['test1'].val)
 
     def test_expr_mul(self):
         # 3 * 4
@@ -269,15 +358,62 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(True, res.val)
 
-    def test_expr_bool(self):
-        # true
+    def test_expr_pow_int(self):
+        # pow(2,4)
 
         res = self._interp._expr({
-            'type': 'bool',
-            'value': True,
+            'type': 'pow',
+            'value1': {
+                'type': 'int',
+                'value': 2,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 4,
+            },
         }, {})
 
-        self.assertEqual(True, res.val)
+        self.assertEqual(16, res.val)
+
+    def test_expr_pow_float(self):
+        # pow(1.5,2)
+
+        res = self._interp._expr({
+            'type': 'pow',
+            'value1': {
+                'type': 'float',
+                'value': 1.5,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 2,
+            },
+        }, {})
+
+        self.assertEqual(2.25, res.val)
+
+    def test_expr_string(self):
+        # "foo"
+
+        res = self._interp._expr({
+            'type': 'string',
+            'value': 'foo',
+        }, {})
+
+        self.assertEqual('foo', res.val)
+
+    def test_expr_string_from_int(self):
+        # string(5)
+
+        res = self._interp._expr({
+            'type': 'string',
+            'value': {
+                'type': 'int',
+                'value': 5,
+            },
+        }, {})
+
+        self.assertEqual('5', res.val)
 
     def test_expr_sub(self):
         # 10 - 4
@@ -296,7 +432,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, res.val)
 
-    def test_expr_subscript(self):
+    def test_expr_subscript_list(self):
         vars = {}
 
         # test1 = [1,2]
@@ -350,6 +486,40 @@ class TestInterpreter(unittest.TestCase):
         ], vars)
 
         self.assertEqual(2, vars['test2'].val)
+
+    def test_expr_subscript_string(self):
+        vars = {}
+
+        # test1 = "bar"
+        # test2 = test[1]
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'string',
+                    'value': 'bar',
+                },
+            },
+            {
+                'type': 'set var',
+                'name': 'test2',
+                'value': {
+                    'type': 'subscript',
+                    'target': {
+                        'type': 'get var',
+                        'name': 'test1',
+                    },
+                    'index': {
+                        'type': 'int',
+                        'value': 1,
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual('a', vars['test2'].val)
 
     def test_instr_append(self):
         vars = {}
@@ -749,7 +919,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(4, vars['times'].val)
 
-    def test_instr_print(self):
+    def test_instr_print_list(self):
         # test1 = []
         # test1.append(1)
         # test1.append(2)
@@ -783,6 +953,28 @@ class TestInterpreter(unittest.TestCase):
                 'value': {
                     'type': 'int',
                     'value': 2,
+                },
+            },
+            {
+                'type': 'print',
+                'value': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+            },
+        ], {})
+
+    def test_instr_print_string(self):
+        # test1 = "foo"
+        # print(test1)
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'string',
+                    'value': 'foo',
                 },
             },
             {

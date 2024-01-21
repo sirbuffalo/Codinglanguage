@@ -48,7 +48,6 @@ class List(Iterable):
     def subscript(self, index):
         return self.val[index.val]
 
-
 class Range(Iterable):
     def __init__(self, start, end):
         self._start = start
@@ -79,6 +78,16 @@ class Float(Number):
     def __init__(self, val):
         self.val = float(val)
 
+class String(Variable):
+    def __init__(self, val):
+        self.val = str(val)
+
+    def subscript(self, index):
+        return String(self.val[index.val])
+
+    def len(self):
+        return Int(len(self.val))
+
 class Interpreter:
     def __init__(self, ast):
         self._ast = ast
@@ -92,12 +101,15 @@ class Interpreter:
             'float': self._float,
             'get var': self._get_var,
             'int': self._int,
+            'join': self._join,
             'len': self._len,
             'list': self._list,
             'mul': self._mul,
             'not': self._not,
             'or': self._or,
+            'pow': self._pow,
             'range': self._range,
+            'string': self._string,
             'sub': self._sub,
             'subscript': self._subscript,
         }
@@ -155,6 +167,15 @@ class Interpreter:
         vars[instr['name']] = self._expr(instr['value'], vars)
 
     def _expr(self, expr, vars):
+        if type(expr) is int:
+            return Int(expr)
+        elif type(expr) is float:
+            return Float(expr)
+        elif type(expr) is bool:
+            return Bool(expr)
+        elif type(expr) is str:
+            return String(expr)
+
         if expr['type'] not in self._exprTypes:
             raise UnknownExpressionType(expr['type'])
 
@@ -171,7 +192,7 @@ class Interpreter:
         return v1.and_(v2)
 
     def _bool(self, expr, vars):
-        return Bool(expr['value'])
+        return Bool(bool(self._expr(expr['value'], vars).val))
 
     def _div(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
@@ -184,13 +205,18 @@ class Interpreter:
         return v1.equal(v2)
 
     def _float(self, expr, vars):
-        return Float(expr['value'])
+        return Float(float(self._expr(expr['value'], vars).val))
 
     def _get_var(self, expr, vars):
         return vars[expr['name']]
 
     def _int(self, expr, vars):
-        return Int(expr['value'])
+        return Int(int(self._expr(expr['value'], vars).val))
+
+    def _join(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        return String(value.val.join(x.val for x in target.iterate()))
 
     def _len(self, expr, vars):
         target = self._expr(expr['target'], vars)
@@ -213,10 +239,18 @@ class Interpreter:
         v2 = self._expr(expr['value2'], vars)
         return v1.or_(v2)
 
+    def _pow(self, expr, vars):
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return self._expr(pow(v1.val, v2.val), vars)
+
     def _range(self, expr, vars):
         start = self._expr(expr['start'], vars)
         end = self._expr(expr['end'], vars)
         return Range(start, end)
+
+    def _string(self, expr, vars):
+        return String(str(self._expr(expr['value'], vars).val))
 
     def _sub(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
