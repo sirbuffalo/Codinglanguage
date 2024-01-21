@@ -120,6 +120,46 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, vars['test3'].val)
 
+    def test_expr_func_kwargs(self):
+        # func(test1, test2) { return test1 - test2 }(test2=3, 5)
+
+        ret = self._interp._expr({
+            'type': 'call',
+            'target': {
+                'type': 'func',
+                'args': ['test1', 'test2'],
+                'code': [
+                    {
+                        'type': 'return',
+                        'value': {
+                            'type': 'sub',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'get var',
+                                'name': 'test2',
+                            }
+                        },
+                    },
+                ],
+            },
+            'kwargs': {
+                'test2': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            'args': [
+                {
+                    'type': 'int',
+                    'value': 5,
+                },
+            ],
+        }, {})
+
+        self.assertEqual(2, ret.val)
     def test_expr_div(self):
         # 12 / 3
 

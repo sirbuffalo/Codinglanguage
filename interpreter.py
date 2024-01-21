@@ -96,12 +96,18 @@ class Func(Variable):
         self.code = code
         self.args = args
 
-    def call(self, args, ast, vars):
-        if len(args) != len(self.args):
+    def call(self, args, kwargs, ast, vars):
+        funcargs = list(self.args)
+        vars = dict(vars)
+
+        for k, v in kwargs.items():
+            funcargs.remove(k)
+            vars[k] = v
+
+        if len(args) != len(funcargs):
             raise InvalidArgs(args)
 
-        vars = dict(vars)
-        for i, arg in enumerate(self.args):
+        for i, arg in enumerate(funcargs):
             vars[arg] = args[i]
 
         return ast._instrs(self.code, vars)
@@ -225,7 +231,12 @@ class Interpreter:
 
     def _call(self, expr, vars):
         target = self._expr(expr['target'], vars)
-        return target.call([self._expr(arg, vars) for arg in expr['args']], self, vars)
+        return target.call(
+            [self._expr(arg, vars) for arg in expr.get('args', [])],
+            {k: self._expr(v, vars) for k, v in expr.get('kwargs', {}).items()},
+            self,
+            vars,
+        )
 
     def _div(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
