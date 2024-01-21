@@ -154,10 +154,13 @@ class Interpreter:
                 return ret
 
     def _instr(self, instr, vars):
-        if instr['type'] not in self._instrTypes:
-            raise UnknownInstructionType(instr['type'])
+        if instr['type'] in self._instrTypes:
+            return self._instrTypes[instr['type']](instr, vars)
 
-        return self._instrTypes[instr['type']](instr, vars)
+        if instr['type'] in self._exprTypes:
+            return self._exprTypes[instr['type']](instr, vars)
+
+        raise UnknownInstructionType(instr['type'])
 
     def _append(self, instr, vars):
         target = self._expr(instr['target'], vars)

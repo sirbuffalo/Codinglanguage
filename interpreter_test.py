@@ -614,6 +614,23 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual([1, 2], [x.val for x in vars['test1'].val])
 
+    def test_instr_expr(self):
+        # 1 + 2
+
+        self._interp._instrs([
+            {
+                'type': 'add',
+                'value1': {
+                    'type': 'int',
+                    'value': 1,
+                },
+                'value2': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+        ], {})
+
     def test_instr_if_equal_true(self):
         vars = {}
 
