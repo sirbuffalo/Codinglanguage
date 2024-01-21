@@ -1,3 +1,6 @@
+class InvalidArgs(Exception):
+    pass
+
 class UnknownExpressionType(Exception):
     pass
 
@@ -88,6 +91,21 @@ class String(Variable):
     def len(self):
         return Int(len(self.val))
 
+class Func(Variable):
+    def __init__(self, code, args):
+        self.code = code
+        self.args = args
+
+    def call(self, args, ast, vars):
+        if len(args) != len(self.args):
+            raise InvalidArgs(args)
+
+        vars = dict(vars)
+        for i, arg in enumerate(self.args):
+            vars[arg] = args[i]
+
+        return ast._instrs(self.code, vars)
+
 class Interpreter:
     def __init__(self, ast):
         self._ast = ast
@@ -96,9 +114,11 @@ class Interpreter:
             'add': self._add,
             'and': self._and,
             'bool': self._bool,
+            'call': self._call,
             'div': self._div,
             'equal': self._equal,
             'float': self._float,
+            'func': self._func,
             'get var': self._get_var,
             'int': self._int,
             'join': self._join,
@@ -120,6 +140,7 @@ class Interpreter:
             'insert': self._insert,
             'loop': self._loop,
             'print': self._print,
+            'return': self._return,
             'set var': self._set_var,
         }
 
@@ -128,13 +149,15 @@ class Interpreter:
 
     def _instrs(self, instrs, vars):
         for instr in instrs:
-            self._instr(instr, vars)
+            ret = self._instr(instr, vars)
+            if ret is not None:
+                return ret
 
     def _instr(self, instr, vars):
         if instr['type'] not in self._instrTypes:
             raise UnknownInstructionType(instr['type'])
 
-        self._instrTypes[instr['type']](instr, vars)
+        return self._instrTypes[instr['type']](instr, vars)
 
     def _append(self, instr, vars):
         target = self._expr(instr['target'], vars)
@@ -162,6 +185,9 @@ class Interpreter:
 
     def _print(self, instr, vars):
         print(self._expr(instr['value'], vars).string())
+
+    def _return(self, instr, vars):
+        return self._expr(instr['value'], vars)
 
     def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
@@ -194,6 +220,10 @@ class Interpreter:
     def _bool(self, expr, vars):
         return Bool(bool(self._expr(expr['value'], vars).val))
 
+    def _call(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        return target.call([self._expr(arg, vars) for arg in expr['args']], self, vars)
+
     def _div(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
         v2 = self._expr(expr['value2'], vars)
@@ -206,6 +236,9 @@ class Interpreter:
 
     def _float(self, expr, vars):
         return Float(float(self._expr(expr['value'], vars).val))
+
+    def _func(self, expr, vars):
+        return Func(expr['code'], expr['args'])
 
     def _get_var(self, expr, vars):
         return vars[expr['name']]
