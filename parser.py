@@ -4,21 +4,53 @@ from math import ceil
 from glob import glob
 from re import *
 import interpreter
+import shutil
+
+def get_indexes(l, *args):
+    return [i for i, e in enumerate(l) if e in args]
 
 def error(text):
-    print('\033[91m' + text)
+    spaces = ' ' * (shutil.get_terminal_size().columns - len(text) - len(file) - len(str(line_num)) - 10)
+    print(f'\033[38;5;52m\033[48;5;9m▲ Error: {text}{spaces}{file}\033[38;5;255m:\033[38;5;52m{line_num}\033[0m')
     exit(1)
+
+
+def add_extra_perrs(splitted):
+    if type(splitted).__name__ == 'str':
+        return splitted
+    if len(splitted) == 3:
+        return splitted
+    for i in get_indexes(splitted, '*', '/'):
+        add_extra_perrs(splitted[i - 1])
+        add_extra_perrs(splitted[i + 1])
+        splitted[i - 1:i + 2] = [[splitted[i - 1:i + 2]]]
+    for i in get_indexes(splitted, '+', '-'):
+        add_extra_perrs(splitted[i - 1])
+        add_extra_perrs(splitted[i + 1])
+        splitted[i - 1:i + 2] = [[splitted[i - 1:i + 2]]]
+
+def classify(splitted):
+    if type(splitted).__name__ == 'str':
+        for data_type in Expression.data_types:
+            if data_type.valid(splitted):
+                return data_type(splitted)
+    if len(splitted) == 1:
+        return classify(splitted[0])
+    if len(splitted) != 3:
+        raise Exception("len(splitted) != 3")
+    return Operation(splitted[1], classify(splitted[0]), classify(splitted[2]))
+
 
 class Var:
     def __init__(self, name):
-        if not Var.vaild(name):
+        if not Var.valid(name):
             error(f'{name} is not a valid variable name')
-        self.name = name
+        self.value = name
 
-    def __dict__(self):
+    def to_dict(self):
         return {
             'type': 'get var',
-            'name': self.name
+            'name': self.value
         }
 
     @staticmethod
@@ -32,7 +64,7 @@ class Int:
             error(f'{value} is not a valid int')
         self.value = int(value)
 
-    def __dict__(self):
+    def to_dict(self):
         return {
             'type': 'int',
             'value': self.value
@@ -55,7 +87,7 @@ class Float:
             error(f'{value} is not a valid float')
         self.value = float(value)
 
-    def __dict__(self):
+    def to_dict(self):
         return {
             'type': 'float',
             'value': self.value
@@ -71,88 +103,219 @@ class Float:
         except TypeError:
             return False
 
+class Range:
+    def __init__(self, value):
+        if not Range.valid(value):
+            error(f'{value} is not a valid Range')
+        brackets = 0
+        for i, char in enumerate(value[1:-1]):
+            if char == '[':
+                brackets += 1
+            elif char == ']':
+                brackets -= 1
+            elif brackets == 0 and value[i:i + 3] == '...':
+                self.start = value[1:i]
+                self.end = value[i + 3:-1]
+
+    def to_dict(self):
+        return {
+            'type': 'range',
+            'start': Expression(self.start).to_dict(),
+            'end': Expression(self.end).to_dict()
+        }
+
+    @staticmethod
+    def valid(value):
+        if value[0] != '[':
+            return False
+        if value[-1] != ']':
+            return False
+        if '...' not in value[1:-1]:
+            return False
+        brackets = 0
+        for i, char in enumerate(value[1:-1]):
+            if char == '[':
+                brackets += 1
+            elif char == ']':
+                brackets -= 1
+            elif brackets == 0 and value[i:i + 3] == '...':
+                return True
+        else:
+            return False
+
 
 class Operation:
+    pemdas = [
+        ['*', '/'],
+        ['+', '-']
+    ]
     operators = {
-        '*':{
+        '*': {
                 'name': 'mul',
-                'types': [Int.valid, Float.valid, Var.valid]
+                'types': [Int, Float, Var]
             },
         '/': {
                 'name': 'div',
-                'types': [Int.valid, Float.valid, Var.valid]
+                'types': [Int, Float, Var]
             },
         '+': {
                 'name': 'add',
-                'types': [Int.valid, Float.valid, Var.valid]
+                'types': [Int, Float, Var]
             },
         '-': {
                 'name': 'sub',
-                'types': [Int.valid, Float.valid, Var.valid]
+                'types': [Int, Float, Var]
             },
         '=': {
             'name': 'set var',
-            'type1': Var.valid,
-            'type2': [Int.valid, Float.valid, Var.valid]
-        },
-        '==': {
-            'name': 'equal',
-            'types': [Int.valid, Float.valid, Var.valid]
+            'type1': Var,
+            'types2': [Int, Float, Var],
+            'name1': 'name',
+            'name2': 'value',
+            'prop1': ['name']
         }
     }
 
-    def __init__(self, operation, *values):
+    def __init__(self, operation, value1, value2):
         self.operation = operation
-        self.values = values
+        self.value1 = value1
+        self.value2 = value2
 
-    def __dict__(self):
+    def to_dict(self):
+        name1 = 'value1'
+        name2 = 'value2'
+        prop1 = []
+        prop2 = []
+        if 'name1' in Operation.operators[self.operation]:
+            name1 = Operation.operators[self.operation]['name1']
+        if 'name2' in Operation.operators[self.operation]:
+            name2 = Operation.operators[self.operation]['name2']
         ans = {
-            'type': Operation.operators[self.operation]['name']
+            'type': Operation.operators[self.operation]['name'],
+            name1: self.value1.to_dict(),
+            name2: self.value2.to_dict()
         }
-        if len(self.values) == 1:
-            ans['value'] = self.values[0]
-        else:
-            for i in range(len(self.values)):
-                ans['value'+str(i+1)] = self.values[i]
+        if 'prop1' in Operation.operators[self.operation]:
+            prop1 = Operation.operators[self.operation]['prop1']
+        if 'prop2' in Operation.operators[self.operation]:
+            prop2 = Operation.operators[self.operation]['prop2']
+        for prop in prop1:
+            ans[name1] = ans[name1][prop]
+        for prop in prop2:
+            ans[name2] = ans[name2][prop]
+        return ans
 
     @staticmethod
     def valid(operator, value1, value2):
         data = Operation.operators[operator]
         if 'types' in data:
-            for value in (value1, value2):
-                for validate in data['types']:
-                    if validate(value):
-                        break
-                else:
-                    return False
-        elif 'type' in data:
-            return data['type'](value1) and data['type'](value2)
-        elif 'type1' in data:
-            if not data['type'](value1):
-                return False
-            if 'type2' in data:
-                return data['type'](value2)
-            elif 'types2' in data:
-                for validate in data['types2']:
-                    if validate(value2):
-                        break
-                else:
-                    return False
-        elif 'types1' in data:
-            for validate in data['types']:
-                if validate(value1):
+            for data_type in data['types']:
+                if isinstance(value1, data_type):
                     break
             else:
                 return False
-            if 'type2' in data:
-                return data['type'](value2)
-            elif 'types2' in data:
-                for validate in data['types2']:
-                    if validate(value2):
+            for data_type in data['types']:
+                if isinstance(value2, data_type):
+                    break
+            else:
+                return False
+        if 'type' in data:
+            return isinstance(value1, data['type']) and isinstance(value2, data['type'])
+        if 'type1' in data:
+            if not isinstance(value1, data['type1']):
+                return False
+        if 'type2' in data:
+            if not isinstance(value2, data['type2']):
+                return False
+        if 'types1' in data:
+            for data_type in data['types1']:
+                if isinstance(value1, data_type):
+                    break
+            else:
+                return False
+        if 'types2' in data:
+            for data_type in data['types2']:
+                if isinstance(value2, data_type):
+                    break
+            else:
+                return False
+        return True
+
+class Expression:
+    data_types = [
+        Int,
+        Float,
+        Range,
+        Var
+    ]
+
+    def __init__(self, text):
+        self.expression = text.strip()
+
+    def to_list(self):
+        splitted = []
+        start = 0
+        while True:
+            if start == len(self.expression.strip()):
+                break
+            if self.expression[start] == '(':
+                perr = 0
+                for i in range(start, len(self.expression)):
+                    if self.expression[i] == '(':
+                        perr += 1
+                    elif self.expression[i] == ')':
+                        perr -= 1
+                    if perr == 0:
+                        splitted.append(Expression(self.expression[start + 1:i]).to_list())
+                        start = i + 1
+                        break
+            if start == len(self.expression.strip()):
+                break
+            for end in range(len(self.expression), 0, -1):
+                for data_type in Expression.data_types:
+                    if data_type.valid(self.expression[start:end].strip()):
+                        splitted.append(self.expression[start:end].strip())
+                        start = end
                         break
                 else:
-                    return False
-        return True
+                    continue
+                break
+            else:
+                error('Could not find valid data type')
+            if start == len(self.expression.strip()):
+                break
+            for end in range(len(self.expression), 0, -1):
+                if self.expression[start:end].strip() in Operation.operators.keys():
+                    splitted.append(self.expression[start:end].strip())
+                    start = end
+                    break
+            else:
+                error('Could not find valid operation')
+        return splitted
+
+    def to_dict(self):
+        splitted = self.to_list()
+        add_extra_perrs(splitted)
+        return classify(splitted).to_dict()
+
+class ForLoop:
+    def __init__(self, text):
+        if not self.valid(text):
+            error('For Loop Not Valid')
+        self.var_name = findall('(?<=^for)[^ ]+(?<= )', text)[0]
+        self.list = text[len(findall('$for +[A-Ba-b][A-Ba-b0-9]* +of +[^ ]', text)[0]):].strip()
+
+    def to_dict(self):
+        return {
+            'type': 'loop',
+            'var': self.var_name,
+            'list': self.list
+        }
+
+    @staticmethod
+    def valid(text):
+        return bool(search('for +[A-Ba-b][A-Ba-b0-9]* +of +.*$', text))
+
 
 class Parser:
     def __init__(self, codetext, indent='    '):
@@ -161,9 +324,10 @@ class Parser:
         self.parsed = None
 
     def parse(self):
+        global line_num
         self.parsed = []
         spot = [self.parsed]
-        last_indent = 0
+        line_num = 1
         for line in self.codetext.split('\n'):
             indention = 0
             for _ in range(ceil(len(line) / len(self.indent)-1)):
@@ -172,163 +336,10 @@ class Parser:
                 indention += 1
             del spot[indention+1:]
             line = line[indention * len(self.indent):]
-            if search("^[a-zA-Z][a-zA-Z0-9]* *=", line):
-                spot[-1].append({
-                    'type': 'set var',
-                    'name':  findall("^[a-zA-Z][a-zA-Z0-9]* *=", line)[0][:-2].strip(),
-                    'value': Parser.parse_expression(split("^[a-zA-Z][a-zA-Z0-9]* *=", line, 1)[1].strip())
-                })
-            elif search('^print\(.*\)$', line):
-                spot[-1].append({
-                    'type': 'print',
-                    'value': Parser.parse_expression(line[6:-1])
-                })
-            elif search('for +[a-zA-Z][a-zA-Z0-9]* +of +', line):
-                new_spot = []
-                spot[-1].append({
-                    'type': 'loop',
-                    'var': sub('(^for +| +of +.+)', '', line),
-                    'list': Parser.parse_expression(sub('for +[a-zA-Z][a-zA-Z0-9]* +of +', '', line, 1)),
-                    'code': new_spot
-                })
-                spot.append(new_spot)
+            spot[-1].append(Expression(line).to_dict())
+            line_num += 1
         return self.parsed
 
-    @classmethod
-    def parse_expression(cls, expression):
-        expression = expression.strip()
-        if expression[0] == '[' and expression[-1] == ']':
-            return {
-                'type': 'range',
-                'start': cls.parse_expression(expression[1:expression.find('...')]),
-                'end': cls.parse_expression(expression[expression.find('...') + 3:-1])
-            }
-        splited = []
-        perrs = [splited]
-        current = ''
-        last_op = -5
-        i = -1
-        for i, char in enumerate(expression):
-            if char == ' ':
-                if current != '':
-                    perrs[-1].append(current)
-                    current = ''
-                continue
-            i += 1
-            if char in ['*', '/', '+', '-'] and last_op + 1 < i and 1 < i:
-                if current:
-                    perrs[-1].append(current)
-                perrs[-1].append(char)
-                current = ''
-                last_op = i
-                continue
-            if char == '(':
-                if current:
-                    perrs[-1].append(current)
-                current = ''
-                newperr = []
-                perrs[-1].append(newperr)
-                perrs.append(newperr)
-                continue
-            if char == ')':
-                if current:
-                    perrs[-1].append(current)
-                current = ''
-                perrs.pop()
-                continue
-            try:
-                int(current + char)
-            except ValueError:
-                try:
-                    perrs[-1].append(str(int(current)))
-                    current = char
-                    continue
-                except ValueError:
-                    pass
-            except TypeError:
-                pass
-            try:
-                float(current + char)
-            except ValueError:
-                try:
-                    perrs[-1].append(str(float(current)))
-                    current = char
-                    continue
-                except ValueError:
-                    pass
-            except TypeError:
-                pass
-            if search('^[a-zA-Z][a-zA-Z0-9]*$', current) and not search('^[a-zA-Z][a-zA-Z0-9]*$', current + char):
-                perrs[-1].append(current)
-                current = ''
-            current += char
-        if current != '':
-            perrs[-1].append(current)
-        return cls.equation_list_to_json(cls.add_extra_parentheses(splited))
-
-    @classmethod
-    def add_extra_parentheses(cls, equation_original):
-        equation = equation_original.copy()
-        if len(equation) == 1 and type(equation[0]).__name__ == 'list':
-            return cls.add_extra_parentheses(equation[0])
-        ops = [i for i in range(len(equation)) if equation[i] in ['*', '/']]
-        for i, index in enumerate(ops):
-            if type(equation[index - i * 2 - 1]).__name__ == 'list':
-                equation[index - i * 2 - 1] = cls.add_extra_parentheses(equation[index - i * 2 - 1])
-            if type(equation[index - i * 2 + 1]).__name__ == 'list':
-                equation[index - i * 2 + 1] = cls.add_extra_parentheses(equation[index - i * 2 + 1])
-            equation[index - i * 2 - 1:index - i * 2 + 2] = [equation[index - i * 2 - 1:index - i * 2 + 2]]
-        ops = [i for i in range(len(equation)) if equation[i] in ['+', '-']]
-        for i, index in enumerate(ops):
-            if type(equation[index - i * 2 - 1]).__name__ == 'list':
-                equation[index - i * 2 - 1] = cls.add_extra_parentheses(equation[index - i * 2 - 1])
-            if type(equation[index - i * 2 + 1]).__name__ == 'list':
-                equation[index - i * 2 + 1] = cls.add_extra_parentheses(equation[index - i * 2 + 1])
-            equation[index - i * 2 - 1:index - i * 2 + 2] = [equation[index - i * 2 - 1:index - i * 2 + 2]]
-        return equation[0]
-
-    @classmethod
-    def equation_list_to_json(cls, equation_list):
-        if type(equation_list).__name__ == 'str':
-            return cls.parse_symbol(equation_list)
-        # print(equation_list, len(equation_list))
-        operand = {
-            '*': 'mul',
-            '/': 'div',
-            '+': 'add',
-            '-': 'sub'
-        }[equation_list[1]]
-        return {
-            'type': operand,
-            'value1': cls.parse_symbol(equation_list[0]),
-            'value2': cls.parse_symbol(equation_list[2])
-        }
-
-    @classmethod
-    def parse_symbol(cls, symbol):
-        symbol_type = type(symbol).__name__
-        if symbol_type == 'list':
-            return cls.equation_list_to_json(symbol)
-        elif symbol_type == 'str':
-            try:
-                return {
-                    'type': 'int',
-                    'value': int(symbol)
-                }
-            except ValueError:
-                try:
-                    return {
-                        'type': 'float',
-                        'value': float(symbol)
-                    }
-                except ValueError:
-                    if search('^[a-zA-Z][a-zA-Z0-9]*$', symbol):
-                        return {
-                            'type': 'get var',
-                            'name': symbol
-                        }
-                    else:
-                        print('?')
 
 files = glob('*.🐮🦬')
 files.extend(glob('*.🦬🐮'))
