@@ -85,6 +85,9 @@ class String(Variable):
     def subscript(self, index):
         return String(self.val[index.val])
 
+    def len(self):
+        return Int(len(self.val))
+
 class Interpreter:
     def __init__(self, ast):
         self._ast = ast
