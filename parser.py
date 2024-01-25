@@ -455,10 +455,28 @@ class ForLoop:
     def valid(text):
         return bool(search('^for +[A-Za-z][A-Za-z0-9]* +of +.*', text))
 
+class IfStatement:
+    def __init__(self, text):
+        if not IfStatement.valid(text):
+            error('invalid if statement')
+        self.text = text
+        self.expression = Expression(text[2:].strip())
 
+    def to_dict(self):
+        code = []
+        return {
+            'type': 'if',
+            'cond': self.expression.to_dict(),
+            'code': code
+        }, code
+
+    @staticmethod
+    def valid(text):
+        return bool(search('^if +.*$', text))
 class Parser:
     commands = [
-        ForLoop
+        ForLoop,
+        IfStatement
     ]
     def __init__(self, codetext, indent='    '):
         self.codetext = codetext
