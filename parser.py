@@ -473,6 +473,7 @@ class IfStatement:
     @staticmethod
     def valid(text):
         return bool(search('^if +.*$', text))
+
 class Parser:
     commands = [
         ForLoop,
