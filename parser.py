@@ -24,18 +24,19 @@ def add_extra_perrs(splitted):
         return [splitted[0], add_extra_perrs(splitted[1])]
     if len(splitted) == 1:
         return add_extra_perrs(splitted[0])
-    minus = 0
+
     for opers in SingleOperation.pemdas:
+        minus = 0
         for i in get_indexes(splitted, *opers):
             splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
             splitted[i - minus:i + 2 - minus] = [[splitted[i - minus:i + 2 - minus]]]
             minus += 1
-    minus = 0
     for opers in Operation.pemdas:
+        minus = 0
         for i in get_indexes(splitted, *opers):
             splitted[i - 1 - minus] = add_extra_perrs(splitted[i - 1 - minus])
             splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
-            splitted[i - 1 - minus:i + 2 - minus] = [[splitted[i - 1 - minus:i + 2 - minus]]]
+            splitted[i - 1 - minus:i + 2 - minus] = [splitted[i - 1 - minus:i + 2 - minus]]
             minus += 2
     return splitted
 
@@ -263,8 +264,9 @@ class Expression:
 
     def to_dict(self):
         splitted = self.to_list()
-        add_extra_perrs(splitted)
+        splitted = add_extra_perrs(splitted)
         return classify(splitted).to_dict()
+
 class SingleOperation:
     pemdas = [
         ['not']

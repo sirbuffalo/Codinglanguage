@@ -1,1 +1,1 @@
-print(not ((True and True and True)))
+print(3 == 2 + 1)
