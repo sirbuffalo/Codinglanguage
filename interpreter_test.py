@@ -52,11 +52,11 @@ class TestInterpreter(unittest.TestCase):
             },
             'value2': {
                 'type': 'float',
-                'value': 4.0,
+                'value': 4.5,
             },
         }, {})
 
-        self.assertEqual(7.0, res.val)
+        self.assertEqual(7.5, res.val)
 
     def test_expr_and_false(self):
         # true and false
@@ -240,11 +240,11 @@ class TestInterpreter(unittest.TestCase):
             },
             'value2': {
                 'type': 'float',
-                'value': 3.0,
+                'value': 4.8,
             },
         }, {})
 
-        self.assertEqual(4.0, res.val)
+        self.assertEqual(2.5, res.val)
 
     def test_expr_equal_false(self):
         # 5 == 6

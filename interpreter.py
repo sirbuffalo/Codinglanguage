@@ -61,25 +61,51 @@ class Range(Iterable):
             yield Int(i)
 
 class Number(Variable):
-    def add(self, other):
-        return type(self)(self.val + other.val)
-
-    def div(self, other):
-        return type(self)(self.val / other.val)
-
-    def mul(self, other):
-        return type(self)(self.val * other.val)
-
-    def sub(self, other):
-        return type(self)(self.val - other.val)
+    pass
 
 class Int(Number):
     def __init__(self, val):
         self.val = int(val)
 
+    def add(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).add(other)
+        else:
+            return type(self)(self.val + other.val)
+
+    def div(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).div(other)
+        else:
+            return type(self)(self.val / other.val)
+
+    def mul(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).mul(other)
+        else:
+            return type(self)(self.val * other.val)
+
+    def sub(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).sub(other)
+        else:
+            return type(self)(self.val - other.val)
+
 class Float(Number):
     def __init__(self, val):
         self.val = float(val)
+
+    def add(self, other):
+        return type(self)(self.val + float(other.val))
+
+    def div(self, other):
+        return type(self)(self.val / float(other.val))
+
+    def mul(self, other):
+        return type(self)(self.val * float(other.val))
+
+    def sub(self, other):
+        return type(self)(self.val - float(other.val))
 
 class String(Variable):
     def __init__(self, val):
