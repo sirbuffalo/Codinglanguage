@@ -148,6 +148,7 @@ class Interpreter:
             'print': self._print,
             'return': self._return,
             'set var': self._set_var,
+            'switch': self._switch,
         }
 
     def run(self):
@@ -200,6 +201,17 @@ class Interpreter:
 
     def _set_var(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
+
+    def _switch(self, instr, vars):
+        for case in instr['cases']:
+            expr = self._expr(case['cond'], vars)
+
+            if expr.val:
+                self._instrs(case['code'], vars)
+                return
+
+        if 'else' in instr:
+            self._instrs(instr['else'], vars)
 
     def _expr(self, expr, vars):
         if type(expr) is int:

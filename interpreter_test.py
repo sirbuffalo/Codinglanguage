@@ -1164,6 +1164,202 @@ class TestInterpreter(unittest.TestCase):
             },
         ], {})
 
+    def test_instr_switch(self):
+        vars = {}
+
+        # test1 = 5
+        # switch:
+        # case test1 == 6:
+        #   test1 *= 2
+        # case test1 == 5:
+        #   test1 *= 3
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 5,
+                },
+            },
+            {
+                'type': 'switch',
+                'cases': [
+                    {
+                        'cond': {
+                            'type': 'equal',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'int',
+                                'value': 6,
+                            },
+                        },
+                        'code': [
+                            {
+                                'type': 'set var',
+                                'name': 'test1',
+                                'value': {
+                                    'type': 'mul',
+                                    'value1': {
+                                        'type': 'get var',
+                                        'name': 'test1',
+                                    },
+                                    'value2': {
+                                        'type': 'int',
+                                        'value': 2,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        'cond': {
+                            'type': 'equal',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'int',
+                                'value': 5,
+                            },
+                        },
+                        'code': [
+                            {
+                                'type': 'set var',
+                                'name': 'test1',
+                                'value': {
+                                    'type': 'mul',
+                                    'value1': {
+                                        'type': 'get var',
+                                        'name': 'test1',
+                                    },
+                                    'value2': {
+                                        'type': 'int',
+                                        'value': 3,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                ],
+            },
+        ], vars)
+
+        self.assertEqual(15, vars['test1'].val)
+
+    def test_instr_switch_else(self):
+        vars = {}
+
+        # test1 = 7
+        # switch:
+        # case test1 == 6:
+        #   test1 *= 2
+        # case test1 == 5:
+        #   test1 *= 3
+        # else:
+        #   test1 *= 4
+
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 7,
+                },
+            },
+            {
+                'type': 'switch',
+                'cases': [
+                    {
+                        'cond': {
+                            'type': 'equal',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'int',
+                                'value': 6,
+                            },
+                        },
+                        'code': [
+                            {
+                                'type': 'set var',
+                                'name': 'test1',
+                                'value': {
+                                    'type': 'mul',
+                                    'value1': {
+                                        'type': 'get var',
+                                        'name': 'test1',
+                                    },
+                                    'value2': {
+                                        'type': 'int',
+                                        'value': 2,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        'cond': {
+                            'type': 'equal',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'int',
+                                'value': 5,
+                            },
+                        },
+                        'code': [
+                            {
+                                'type': 'set var',
+                                'name': 'test1',
+                                'value': {
+                                    'type': 'mul',
+                                    'value1': {
+                                        'type': 'get var',
+                                        'name': 'test1',
+                                    },
+                                    'value2': {
+                                        'type': 'int',
+                                        'value': 3,
+                                    },
+                                },
+                            },
+                        ],
+                    },
+                ],
+                'else': [
+                    {
+                        'type': 'set var',
+                        'name': 'test1',
+                        'value': {
+                            'type': 'mul',
+                            'value1': {
+                                'type': 'get var',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'int',
+                                'value': 4,
+                            },
+                        },
+                    },
+                ],
+            },
+        ], vars)
+
+        self.assertEqual(28, vars['test1'].val)
+
 
 if __name__ == '__main__':
     unittest.main()
