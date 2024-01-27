@@ -24,6 +24,40 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
+    def test_expr_floatint(self):
+        # 3.0 + 4
+
+        res = self._interp._expr({
+            'type': 'add',
+            'value1': {
+                'type': 'float',
+                'value': 3.0,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 4,
+            },
+        }, {})
+
+        self.assertEqual(7.0, res.val)
+
+    def test_expr_intfloat(self):
+        # 3 + 4.0
+
+        res = self._interp._expr({
+            'type': 'add',
+            'value1': {
+                'type': 'int',
+                'value': 3,
+            },
+            'value2': {
+                'type': 'float',
+                'value': 4.0,
+            },
+        }, {})
+
+        self.assertEqual(7.0, res.val)
+
     def test_expr_and_false(self):
         # true and false
 
