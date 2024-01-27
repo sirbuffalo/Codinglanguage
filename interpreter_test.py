@@ -194,6 +194,7 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual(2, ret.val)
+
     def test_expr_div(self):
         # 12 / 3
 
@@ -210,6 +211,40 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual(4, res.val)
+
+    def test_expr_div_floatint(self):
+        # 12.0 / 3
+
+        res = self._interp._expr({
+            'type': 'div',
+            'value1': {
+                'type': 'float',
+                'value': 12.0,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 3,
+            },
+        }, {})
+
+        self.assertEqual(4.0, res.val)
+
+    def test_expr_div_intfloat(self):
+        # 12 / 3.0
+
+        res = self._interp._expr({
+            'type': 'div',
+            'value1': {
+                'type': 'int',
+                'value': 12,
+            },
+            'value2': {
+                'type': 'float',
+                'value': 3.0,
+            },
+        }, {})
+
+        self.assertEqual(4.0, res.val)
 
     def test_expr_equal_false(self):
         # 5 == 6
