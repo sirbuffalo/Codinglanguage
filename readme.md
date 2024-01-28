@@ -6,7 +6,7 @@ Here is a example parse for the code above
     [
         # setting times to 10
         {
-            'type': 'set var',
+            'type': 'setvar',
             'name': 'times',
             'value': {
                 'type': 'int',
@@ -30,7 +30,7 @@ Here is a example parse for the code above
                         'value': 1
                     },
                     'num2': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'times'
                     }
                 }
@@ -40,7 +40,7 @@ Here is a example parse for the code above
                 {
                     'type': 'print',
                     'value': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'index'
                     }
                 }

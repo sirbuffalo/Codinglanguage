@@ -169,7 +169,7 @@ class Interpreter:
             'equal': self._equal,
             'float': self._float,
             'func': self._func,
-            'get var': self._get_var,
+            'getvar': self._getvar,
             'int': self._int,
             'join': self._join,
             'len': self._len,
@@ -198,7 +198,7 @@ class Interpreter:
             'powset': self._powset,
             'print': self._print,
             'return': self._return,
-            'set var': self._set_var,
+            'setvar': self._setvar,
             'subset': self._subset,
             'switch': self._switch,
         }
@@ -281,7 +281,7 @@ class Interpreter:
     def _return(self, instr, vars):
         return self._expr(instr['value'], vars)
 
-    def _set_var(self, instr, vars):
+    def _setvar(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
 
     def _subset(self, expr, vars):
@@ -354,7 +354,7 @@ class Interpreter:
     def _func(self, expr, vars):
         return Func(expr['code'], expr['args'])
 
-    def _get_var(self, expr, vars):
+    def _getvar(self, expr, vars):
         return vars[expr['name']]
 
     def _int(self, expr, vars):

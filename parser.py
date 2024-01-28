@@ -106,7 +106,7 @@ class Var:
 
     def to_dict(self):
         return {
-            'type': 'get var',
+            'type': 'getvar',
             'name': self.value
         }
 
@@ -380,7 +380,7 @@ class Operation:
             'types': [Int, Float, BuiltInFunction, Var]
         },
         '=': {
-            'name': 'set var',
+            'name': 'setvar',
             'type1': Var,
             'types2': [Int, Float, Bool, BuiltInFunction, Var],
             'name1': 'name',
