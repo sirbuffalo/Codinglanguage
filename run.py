@@ -1,11 +1,8 @@
 #!/usr/bin/python3
 
 import argparse
-import sys
-from glob import glob
 from parser import Parser
 from interpreter import Interpreter
-import subprocess
 
 endings = {
     '🐮🦬',
