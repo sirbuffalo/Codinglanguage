@@ -318,7 +318,13 @@ class Interpreter:
         return target.len()
 
     def _list(self, expr, vars):
-        return List()
+        l = List()
+
+        if 'values' in expr:
+            for value in expr['values']:
+                l.append(self._expr(value, vars))
+
+        return l
 
     def _mod(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)

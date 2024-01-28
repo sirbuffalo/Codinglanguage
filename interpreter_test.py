@@ -455,6 +455,25 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(3, vars['test1'].val)
 
+    def test_expr_list_values(self):
+        # [3,4]
+
+        val = self._interp._expr({
+            'type': 'list',
+            'values': [
+                {
+                    'type': 'int',
+                    'value': 3,
+                },
+                {
+                    'type': 'int',
+                    'value': 4,
+                },
+            ],
+        }, {})
+
+        self.assertEqual([3, 4], [x.val for x in val.iterate()])
+
     def test_expr_mod(self):
         # 20 % 6
 
