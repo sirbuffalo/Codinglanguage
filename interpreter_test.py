@@ -473,6 +473,23 @@ class TestInterpreter(unittest.TestCase):
         self.assertEqual(2, res.val)
 
     def test_expr_mul(self):
+        # 20 % 6
+
+        res = self._interp._expr({
+            'type': 'mod',
+            'value1': {
+                'type': 'int',
+                'value': 20,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 6,
+            },
+        }, {})
+
+        self.assertEqual(4, res.val)
+
+    def test_expr_mul(self):
         # 3 * 4
 
         res = self._interp._expr({
