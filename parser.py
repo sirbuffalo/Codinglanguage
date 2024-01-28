@@ -106,7 +106,7 @@ class Var:
 
     def to_dict(self):
         return {
-            'type': 'get var',
+            'type': 'getvar',
             'name': self.value
         }
 
@@ -216,12 +216,14 @@ class List:
             elif bracs == 0 and char == ',':
                 self.values.append('')
             elif bracs == 0:
-                self.value[-1] += char
-        self.values = [exp for exp in self.values]
+                self.values[-1] += char
+        self.values = [Expression(exp).to_dict() for exp in self.values]
 
     def to_dict(self):
-        pass
-
+        return {
+            'type': 'list',
+            'values': self.values
+        }
 
     @staticmethod
     def valid(value):
@@ -238,6 +240,47 @@ class List:
         return True
 
 
+class BuiltInMethod:
+    methods = {
+        'append': {
+            'object': 'target',
+            'inputs': {
+                'value': [
+                    Int,
+                    Float,
+                    Range,
+                    List,
+                    Bool,
+                    BuiltInFunction,
+                    Var
+                ]
+            }
+        }
+    }
+    def __init__(self, text):
+        if not BuiltInMethod.valid(text):
+            error('Invalid List')
+        self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[1:-2]
+
+
+
+    def to_dict(self):
+        pass
+
+    @staticmethod
+    def valid(text):
+        if search('^.[a-zA-Z][a-zA-Z0-9]*\(.*\)$', text):
+            method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[1:-2]
+            if method in BuiltInMethod.methods:
+                perrs = 0
+                for char in text[len(method) + 1:]:
+                    if char == '(':
+                        perrs += 1
+                    elif char == ')':
+                        perrs -= 1
+                if perrs == 0:
+                    return True
+        return False
 
 
 class Expression:
@@ -245,6 +288,7 @@ class Expression:
         Int,
         Float,
         Range,
+        List,
         Bool,
         BuiltInFunction,
         Var
@@ -380,10 +424,50 @@ class Operation:
             'types': [Int, Float, BuiltInFunction, Var]
         },
         '=': {
-            'name': 'set var',
+            'name': 'setvar',
             'type1': Var,
-            'types2': [Int, Float, Bool, BuiltInFunction, Var],
+            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
             'name1': 'name',
+            'name2': 'value',
+            'prop1': ['name']
+        },
+        '*=': {
+            'name': 'mulset',
+            'type1': Var,
+            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'name1': 'target',
+            'name2': 'value',
+            'prop1': ['name']
+        },
+        '/=': {
+            'name': 'divset',
+            'type1': Var,
+            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'name1': 'target',
+            'name2': 'value',
+            'prop1': ['name']
+        },
+        '+=': {
+            'name': 'addset',
+            'type1': Var,
+            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'name1': 'target',
+            'name2': 'value',
+            'prop1': ['name']
+        },
+        '-=': {
+            'name': 'subset',
+            'type1': Var,
+            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'name1': 'target',
+            'name2': 'value',
+            'prop1': ['name']
+        },
+        '^=': {
+            'name': 'powset',
+            'type1': Var,
+            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'name1': 'target',
             'name2': 'value',
             'prop1': ['name']
         },
@@ -405,6 +489,7 @@ class Operation:
                 Int,
                 Float,
                 Range,
+                List,
                 Bool,
                 BuiltInFunction,
                 Var
@@ -416,6 +501,7 @@ class Operation:
                 Int,
                 Float,
                 Range,
+                List,
                 Bool,
                 BuiltInFunction,
                 Var

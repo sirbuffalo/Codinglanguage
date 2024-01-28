@@ -91,6 +91,12 @@ class Int(Number):
         else:
             return type(self)(self.val * other.val)
 
+    def pow(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).pow(other)
+        else:
+            return type(self)(pow(self.val, other.val))
+
     def sub(self, other):
         if isinstance(other, Float):
             return Float(self.val).sub(other)
@@ -112,6 +118,9 @@ class Float(Number):
 
     def mul(self, other):
         return type(self)(self.val * float(other.val))
+
+    def pow(self, other):
+        return type(self)(pow(self.val, float(other.val)))
 
     def sub(self, other):
         return type(self)(self.val - float(other.val))
@@ -160,7 +169,7 @@ class Interpreter:
             'equal': self._equal,
             'float': self._float,
             'func': self._func,
-            'get var': self._get_var,
+            'getvar': self._getvar,
             'int': self._int,
             'join': self._join,
             'len': self._len,
@@ -178,13 +187,19 @@ class Interpreter:
         }
 
         self._instrTypes = {
+            'addset': self._addset,
             'append': self._append,
+            'divset': self._divset,
             'if': self._if,
             'insert': self._insert,
             'loop': self._loop,
+            'modset': self._modset,
+            'mulset': self._mulset,
+            'powset': self._powset,
             'print': self._print,
             'return': self._return,
-            'set var': self._set_var,
+            'setvar': self._setvar,
+            'subset': self._subset,
             'switch': self._switch,
         }
 
@@ -206,10 +221,22 @@ class Interpreter:
 
         raise UnknownInstructionType(instr['type'])
 
+    def _addset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.add(value)
+        target.val = tmp.val
+
     def _append(self, instr, vars):
         target = self._expr(instr['target'], vars)
         value = self._expr(instr['value'], vars)
         target.append(value)
+
+    def _divset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.div(value)
+        target.val = tmp.val
 
     def _if(self, instr, vars):
         expr = self._expr(instr['cond'], vars)
@@ -230,14 +257,38 @@ class Interpreter:
             vars[instr['var']] = iter
             self._instrs(instr['code'], vars)
 
+    def _modset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.mod(value)
+        target.val = tmp.val
+
+    def _mulset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.mul(value)
+        target.val = tmp.val
+
+    def _powset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.pow(value)
+        target.val = tmp.val
+
     def _print(self, instr, vars):
         print(self._expr(instr['value'], vars).string())
 
     def _return(self, instr, vars):
         return self._expr(instr['value'], vars)
 
-    def _set_var(self, instr, vars):
+    def _setvar(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
+
+    def _subset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.sub(value)
+        target.val = tmp.val
 
     def _switch(self, instr, vars):
         for case in instr['cases']:
@@ -303,7 +354,7 @@ class Interpreter:
     def _func(self, expr, vars):
         return Func(expr['code'], expr['args'])
 
-    def _get_var(self, expr, vars):
+    def _getvar(self, expr, vars):
         return vars[expr['name']]
 
     def _int(self, expr, vars):
@@ -354,7 +405,7 @@ class Interpreter:
     def _pow(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
         v2 = self._expr(expr['value2'], vars)
-        return self._expr(pow(v1.val, v2.val), vars)
+        return v1.pow(v2)
 
     def _range(self, expr, vars):
         start = self._expr(expr['start'], vars)

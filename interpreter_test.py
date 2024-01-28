@@ -110,7 +110,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'func',
@@ -121,7 +121,7 @@ class TestInterpreter(unittest.TestCase):
                             'value': {
                                 'type': 'add',
                                 'value1': {
-                                    'type': 'get var',
+                                    'type': 'getvar',
                                     'name': 'test2',
                                 },
                                 'value2': {
@@ -134,12 +134,12 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test3',
                 'value': {
                     'type': 'call',
                     'target': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'test1',
                     },
                     'args': [
@@ -168,11 +168,11 @@ class TestInterpreter(unittest.TestCase):
                         'value': {
                             'type': 'sub',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test2',
                             }
                         },
@@ -294,7 +294,7 @@ class TestInterpreter(unittest.TestCase):
         # test1
 
         res = self._interp._expr({
-            'type': 'get var',
+            'type': 'getvar',
             'name': 'test1',
         }, {
             'test1': self._interp._expr({
@@ -313,7 +313,7 @@ class TestInterpreter(unittest.TestCase):
 
         res = self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -322,7 +322,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -333,7 +333,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -342,12 +342,12 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test2',
                 'value': {
                     'type': 'join',
                     'target': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'test1',
                     },
                     'value': {
@@ -391,7 +391,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -400,7 +400,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -411,7 +411,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -420,12 +420,12 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test2',
                 'value': {
                     'type': 'len',
                     'target': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'test1',
                     },
                 },
@@ -441,7 +441,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'len',
@@ -688,7 +688,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -697,7 +697,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -708,7 +708,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -717,12 +717,12 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test2',
                 'value': {
                     'type': 'subscript',
                     'target': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'test1',
                     },
                     'index': {
@@ -743,7 +743,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'string',
@@ -751,12 +751,12 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test2',
                 'value': {
                     'type': 'subscript',
                     'target': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'test1',
                     },
                     'index': {
@@ -769,6 +769,36 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual('a', vars['test2'].val)
 
+    def test_instr_addset(self):
+        vars = {}
+
+        # test1 = 1
+        # test1 += 2
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 1,
+                },
+            },
+            {
+                'type': 'addset',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(3, vars['test1'].val)
+
     def test_instr_append(self):
         vars = {}
 
@@ -778,7 +808,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -787,7 +817,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -798,7 +828,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -809,6 +839,36 @@ class TestInterpreter(unittest.TestCase):
         ], vars)
 
         self.assertEqual([1, 2], [x.val for x in vars['test1'].val])
+
+    def test_instr_divset(self):
+        vars = {}
+
+        # test1 = 12
+        # test1 /= 3
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 12,
+                },
+            },
+            {
+                'type': 'divset',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(4, vars['test1'].val)
 
     def test_instr_expr(self):
         # 1 + 2
@@ -836,7 +896,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'int',
@@ -848,7 +908,7 @@ class TestInterpreter(unittest.TestCase):
                 'cond': {
                     'type': 'equal',
                     'value1': {
-                        'type': 'get var',
+                        'type': 'getvar',
                         'name': 'test1',
                     },
                     'value2': {
@@ -858,12 +918,12 @@ class TestInterpreter(unittest.TestCase):
                 },
                 'code': [
                     {
-                        'type': 'set var',
+                        'type': 'setvar',
                         'name': 'test1',
                         'value': {
                             'type': 'mul',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
@@ -894,7 +954,7 @@ class TestInterpreter(unittest.TestCase):
             },
             'code': [
                 {
-                    'type': 'set var',
+                    'type': 'setvar',
                     'name': 'result',
                     'value': {
                         'type': 'int',
@@ -904,7 +964,7 @@ class TestInterpreter(unittest.TestCase):
             ],
             'else': [
                 {
-                    'type': 'set var',
+                    'type': 'setvar',
                     'name': 'result',
                     'value': {
                         'type': 'int',
@@ -932,7 +992,7 @@ class TestInterpreter(unittest.TestCase):
             },
             'code': [
                 {
-                    'type': 'set var',
+                    'type': 'setvar',
                     'name': 'result',
                     'value': {
                         'type': 'int',
@@ -942,7 +1002,7 @@ class TestInterpreter(unittest.TestCase):
             ],
             'else': [
                 {
-                    'type': 'set var',
+                    'type': 'setvar',
                     'name': 'result',
                     'value': {
                         'type': 'int',
@@ -962,7 +1022,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -971,7 +1031,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -982,7 +1042,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -993,7 +1053,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -1004,7 +1064,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'insert',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'index': {
@@ -1029,7 +1089,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'int',
@@ -1052,16 +1112,16 @@ class TestInterpreter(unittest.TestCase):
                 },
                 'code': [
                     {
-                        'type': 'set var',
+                        'type': 'setvar',
                         'name': 'test1',
                         'value': {
                             'type': 'add',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'i',
                             },
                         },
@@ -1082,7 +1142,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -1091,7 +1151,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -1102,7 +1162,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -1111,7 +1171,7 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test2',
                 'value': {
                     'type': 'int',
@@ -1122,21 +1182,21 @@ class TestInterpreter(unittest.TestCase):
                 'type': 'loop',
                 'var': 'i',
                 'list': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'code': [
                     {
-                        'type': 'set var',
+                        'type': 'setvar',
                         'name': 'test2',
                         'value': {
                             'type': 'add',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test2',
                             },
                             'value2': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'i',
                             },
                         },
@@ -1153,7 +1213,7 @@ class TestInterpreter(unittest.TestCase):
         # times = (((1+1)*6)/3)
 
         self._interp._instr({
-			'type': 'set var',
+			'type': 'setvar',
             'name': 'times',
             'value': {
                 'type': 'div',
@@ -1184,6 +1244,96 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(4, vars['times'].val)
 
+    def test_instr_modset(self):
+        vars = {}
+
+        # test1 = 20
+        # test1 %= 6
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 20,
+                },
+            },
+            {
+                'type': 'modset',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 6,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(2, vars['test1'].val)
+
+    def test_instr_mulset(self):
+        vars = {}
+
+        # test1 = 3
+        # test1 *= 4
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            {
+                'type': 'mulset',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 4,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(12, vars['test1'].val)
+
+    def test_instr_powset(self):
+        vars = {}
+
+        # test1 = 2
+        # test1 ^= 3
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+            {
+                'type': 'powset',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(8, vars['test1'].val)
+
     def test_instr_print_list(self):
         # test1 = []
         # test1.append(1)
@@ -1192,7 +1342,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'list',
@@ -1201,7 +1351,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -1212,7 +1362,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'append',
                 'target': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
                 'value': {
@@ -1223,7 +1373,7 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'print',
                 'value': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
             },
@@ -1235,7 +1385,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'string',
@@ -1245,11 +1395,41 @@ class TestInterpreter(unittest.TestCase):
             {
                 'type': 'print',
                 'value': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'test1',
                 },
             },
         ], {})
+
+    def test_instr_subset(self):
+        vars = {}
+
+        # test1 = 5
+        # test1 -= 2
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 5,
+                },
+            },
+            {
+                'type': 'subset',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(3, vars['test1'].val)
 
     def test_instr_switch(self):
         vars = {}
@@ -1263,7 +1443,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'int',
@@ -1277,7 +1457,7 @@ class TestInterpreter(unittest.TestCase):
                         'cond': {
                             'type': 'equal',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
@@ -1287,12 +1467,12 @@ class TestInterpreter(unittest.TestCase):
                         },
                         'code': [
                             {
-                                'type': 'set var',
+                                'type': 'setvar',
                                 'name': 'test1',
                                 'value': {
                                     'type': 'mul',
                                     'value1': {
-                                        'type': 'get var',
+                                        'type': 'getvar',
                                         'name': 'test1',
                                     },
                                     'value2': {
@@ -1307,7 +1487,7 @@ class TestInterpreter(unittest.TestCase):
                         'cond': {
                             'type': 'equal',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
@@ -1317,12 +1497,12 @@ class TestInterpreter(unittest.TestCase):
                         },
                         'code': [
                             {
-                                'type': 'set var',
+                                'type': 'setvar',
                                 'name': 'test1',
                                 'value': {
                                     'type': 'mul',
                                     'value1': {
-                                        'type': 'get var',
+                                        'type': 'getvar',
                                         'name': 'test1',
                                     },
                                     'value2': {
@@ -1354,7 +1534,7 @@ class TestInterpreter(unittest.TestCase):
 
         self._interp._instrs([
             {
-                'type': 'set var',
+                'type': 'setvar',
                 'name': 'test1',
                 'value': {
                     'type': 'int',
@@ -1368,7 +1548,7 @@ class TestInterpreter(unittest.TestCase):
                         'cond': {
                             'type': 'equal',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
@@ -1378,12 +1558,12 @@ class TestInterpreter(unittest.TestCase):
                         },
                         'code': [
                             {
-                                'type': 'set var',
+                                'type': 'setvar',
                                 'name': 'test1',
                                 'value': {
                                     'type': 'mul',
                                     'value1': {
-                                        'type': 'get var',
+                                        'type': 'getvar',
                                         'name': 'test1',
                                     },
                                     'value2': {
@@ -1398,7 +1578,7 @@ class TestInterpreter(unittest.TestCase):
                         'cond': {
                             'type': 'equal',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
@@ -1408,12 +1588,12 @@ class TestInterpreter(unittest.TestCase):
                         },
                         'code': [
                             {
-                                'type': 'set var',
+                                'type': 'setvar',
                                 'name': 'test1',
                                 'value': {
                                     'type': 'mul',
                                     'value1': {
-                                        'type': 'get var',
+                                        'type': 'getvar',
                                         'name': 'test1',
                                     },
                                     'value2': {
@@ -1427,12 +1607,12 @@ class TestInterpreter(unittest.TestCase):
                 ],
                 'else': [
                     {
-                        'type': 'set var',
+                        'type': 'setvar',
                         'name': 'test1',
                         'value': {
                             'type': 'mul',
                             'value1': {
-                                'type': 'get var',
+                                'type': 'getvar',
                                 'name': 'test1',
                             },
                             'value2': {
