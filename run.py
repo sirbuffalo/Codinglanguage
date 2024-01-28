@@ -21,7 +21,7 @@ ap.add_argument('filename', nargs='+')
 args = ap.parse_args()
 
 for filename in args.filename:
-    parsed = Parser(sys.argv[1]).parse()
+    parsed = Parser(filename).parse()
     if args.parsed:
         print(f'{filename}: {parsed}')
     interp = Interpreter(parsed)
