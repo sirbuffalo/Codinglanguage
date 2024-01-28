@@ -193,6 +193,7 @@ class Interpreter:
             'if': self._if,
             'insert': self._insert,
             'loop': self._loop,
+            'modset': self._modset,
             'mulset': self._mulset,
             'powset': self._powset,
             'print': self._print,
@@ -255,6 +256,12 @@ class Interpreter:
         for iter in self._expr(instr['list'], vars).iterate():
             vars[instr['var']] = iter
             self._instrs(instr['code'], vars)
+
+    def _modset(self, expr, vars):
+        target = self._expr(expr['target'], vars)
+        value = self._expr(expr['value'], vars)
+        tmp = target.mod(value)
+        target.val = tmp.val
 
     def _mulset(self, expr, vars):
         target = self._expr(expr['target'], vars)

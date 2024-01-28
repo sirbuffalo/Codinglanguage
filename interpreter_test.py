@@ -1244,6 +1244,36 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(4, vars['times'].val)
 
+    def test_instr_modset(self):
+        vars = {}
+
+        # test1 = 20
+        # test1 %= 6
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 20,
+                },
+            },
+            {
+                'type': 'modset',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 6,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(2, vars['test1'].val)
+
     def test_instr_mulset(self):
         vars = {}
 
