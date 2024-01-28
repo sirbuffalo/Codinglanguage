@@ -79,6 +79,12 @@ class Int(Number):
         else:
             return type(self)(self.val / other.val)
 
+    def mod(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).mod(other)
+        else:
+            return type(self)(self.val % other.val)
+
     def mul(self, other):
         if isinstance(other, Float):
             return Float(self.val).mul(other)
@@ -100,6 +106,9 @@ class Float(Number):
 
     def div(self, other):
         return type(self)(self.val / float(other.val))
+
+    def mod(self, other):
+        return type(self)(self.val % float(other.val))
 
     def mul(self, other):
         return type(self)(self.val * float(other.val))
@@ -156,6 +165,7 @@ class Interpreter:
             'join': self._join,
             'len': self._len,
             'list': self._list,
+            'mod': self._mod,
             'mul': self._mul,
             'not': self._not,
             'or': self._or,
@@ -309,6 +319,11 @@ class Interpreter:
 
     def _list(self, expr, vars):
         return List()
+
+    def _mod(self, expr, vars):
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.mod(v2)
 
     def _mul(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
