@@ -436,40 +436,35 @@ class Operation:
             'type1': Var,
             'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
             'name1': 'target',
-            'name2': 'value',
-            'prop1': ['name']
+            'name2': 'value'
         },
         '/=': {
             'name': 'divset',
             'type1': Var,
             'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
             'name1': 'target',
-            'name2': 'value',
-            'prop1': ['name']
+            'name2': 'value'
         },
         '+=': {
             'name': 'addset',
             'type1': Var,
             'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
             'name1': 'target',
-            'name2': 'value',
-            'prop1': ['name']
+            'name2': 'value'
         },
         '-=': {
             'name': 'subset',
             'type1': Var,
             'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
             'name1': 'target',
-            'name2': 'value',
-            'prop1': ['name']
+            'name2': 'value'
         },
         '^=': {
             'name': 'powset',
             'type1': Var,
             'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
             'name1': 'target',
-            'name2': 'value',
-            'prop1': ['name']
+            'name2': 'value'
         },
         'and': {
             'name': 'and',
