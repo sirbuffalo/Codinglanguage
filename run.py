@@ -4,14 +4,6 @@ import argparse
 from parser import Parser
 from interpreter import Interpreter
 
-endings = {
-    '🐮🦬',
-    '🐮',
-    '🔥🦬',
-    'cb',
-    'fb',
-}
-
 ap = argparse.ArgumentParser()
 ap.add_argument('-p', '--parsed', action='store_true', help='Print parse tree')
 ap.add_argument('filename', nargs='+')
