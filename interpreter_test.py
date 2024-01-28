@@ -455,6 +455,25 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(3, vars['test1'].val)
 
+    def test_expr_list_values(self):
+        # [3,4]
+
+        val = self._interp._expr({
+            'type': 'list',
+            'values': [
+                {
+                    'type': 'int',
+                    'value': 3,
+                },
+                {
+                    'type': 'int',
+                    'value': 4,
+                },
+            ],
+        }, {})
+
+        self.assertEqual([3, 4], [x.val for x in val.iterate()])
+
     def test_expr_mod(self):
         # 20 % 6
 
@@ -514,6 +533,40 @@ class TestInterpreter(unittest.TestCase):
             'value': {
                 'type': 'bool',
                 'value': False,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
+    def test_expr_notequal_false(self):
+        # 6 != 6
+
+        res = self._interp._expr({
+            'type': 'notequal',
+            'value1': {
+                'type': 'int',
+                'value': 6,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 6,
+            },
+        }, {})
+
+        self.assertEqual(False, res.val)
+
+    def test_expr_notequal_true(self):
+        # 5 != 6
+
+        res = self._interp._expr({
+            'type': 'notequal',
+            'value1': {
+                'type': 'int',
+                'value': 5,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 6,
             },
         }, {})
 

@@ -168,6 +168,7 @@ class Interpreter:
             'mod': self._mod,
             'mul': self._mul,
             'not': self._not,
+            'notequal': self._notequal,
             'or': self._or,
             'pow': self._pow,
             'range': self._range,
@@ -318,7 +319,13 @@ class Interpreter:
         return target.len()
 
     def _list(self, expr, vars):
-        return List()
+        l = List()
+
+        if 'values' in expr:
+            for value in expr['values']:
+                l.append(self._expr(value, vars))
+
+        return l
 
     def _mod(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
@@ -333,6 +340,11 @@ class Interpreter:
     def _not(self, expr, vars):
         value = self._expr(expr['value'], vars)
         return value.not_()
+
+    def _notequal(self, expr, vars):
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.equal(v2).not_()
 
     def _or(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
