@@ -538,6 +538,40 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(True, res.val)
 
+    def test_expr_notequal_false(self):
+        # 6 != 6
+
+        res = self._interp._expr({
+            'type': 'notequal',
+            'value1': {
+                'type': 'int',
+                'value': 6,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 6,
+            },
+        }, {})
+
+        self.assertEqual(False, res.val)
+
+    def test_expr_notequal_true(self):
+        # 5 != 6
+
+        res = self._interp._expr({
+            'type': 'notequal',
+            'value1': {
+                'type': 'int',
+                'value': 5,
+            },
+            'value2': {
+                'type': 'int',
+                'value': 6,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
     def test_expr_or_false(self):
         # false or false
 
