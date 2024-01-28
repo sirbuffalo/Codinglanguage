@@ -769,6 +769,36 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual('a', vars['test2'].val)
 
+    def test_instr_addset(self):
+        vars = {}
+
+        # test1 = 1
+        # test1 += 2
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 1,
+                },
+            },
+            {
+                'type': 'addset',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(3, vars['test1'].val)
+
     def test_instr_append(self):
         vars = {}
 
@@ -809,6 +839,36 @@ class TestInterpreter(unittest.TestCase):
         ], vars)
 
         self.assertEqual([1, 2], [x.val for x in vars['test1'].val])
+
+    def test_instr_divset(self):
+        vars = {}
+
+        # test1 = 12
+        # test1 /= 3
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 12,
+                },
+            },
+            {
+                'type': 'divset',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(4, vars['test1'].val)
 
     def test_instr_expr(self):
         # 1 + 2
@@ -1184,6 +1244,66 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(4, vars['times'].val)
 
+    def test_instr_mulset(self):
+        vars = {}
+
+        # test1 = 3
+        # test1 *= 4
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            {
+                'type': 'mulset',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 4,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(12, vars['test1'].val)
+
+    def test_instr_powset(self):
+        vars = {}
+
+        # test1 = 2
+        # test1 ^= 3
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+            {
+                'type': 'powset',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(8, vars['test1'].val)
+
     def test_instr_print_list(self):
         # test1 = []
         # test1.append(1)
@@ -1250,6 +1370,36 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
         ], {})
+
+    def test_instr_subset(self):
+        vars = {}
+
+        # test1 = 5
+        # test1 -= 2
+
+        self._interp._instrs([
+            {
+                'type': 'set var',
+                'name': 'test1',
+                'value': {
+                    'type': 'int',
+                    'value': 5,
+                },
+            },
+            {
+                'type': 'subset',
+                'target': {
+                    'type': 'get var',
+                    'name': 'test1',
+                },
+                'value': {
+                    'type': 'int',
+                    'value': 2,
+                },
+            },
+        ], vars)
+
+        self.assertEqual(3, vars['test1'].val)
 
     def test_instr_switch(self):
         vars = {}
