@@ -5,6 +5,7 @@ from glob import glob
 from re import *
 import interpreter
 import shutil
+import sys
 
 def get_indexes(l, *args):
     return [i for i, e in enumerate(l) if e in args]
@@ -26,19 +27,18 @@ def add_extra_perrs(splitted):
     if len(splitted) == 1:
         return add_extra_perrs(splitted[0])
 
-    for opers in SingleOperation.pemdas:
+    for opers in pemdas:
         minus = 0
         for i in get_indexes(splitted, *opers):
-            splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
-            splitted[i - minus:i + 2 - minus] = [[splitted[i - minus:i + 2 - minus]]]
-            minus += 1
-    for opers in Operation.pemdas:
-        minus = 0
-        for i in get_indexes(splitted, *opers):
-            splitted[i - 1 - minus] = add_extra_perrs(splitted[i - 1 - minus])
-            splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
-            splitted[i - 1 - minus:i + 2 - minus] = [splitted[i - 1 - minus:i + 2 - minus]]
-            minus += 2
+            if splitted[i - minus] in SingleOperation.operators:
+                splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
+                splitted[i - minus:i + 2 - minus] = [[splitted[i - minus:i + 2 - minus]]]
+                minus += 1
+            else:
+                splitted[i - 1 - minus] = add_extra_perrs(splitted[i - 1 - minus])
+                splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
+                splitted[i - 1 - minus:i + 2 - minus] = [splitted[i - 1 - minus:i + 2 - minus]]
+                minus += 2
     return splitted
 
 def classify(splitted):
@@ -217,6 +217,10 @@ class List:
                 self.values.append('')
             elif bracs == 0:
                 self.value[-1] += char
+        self.values = [exp for exp in self.values]
+
+    def to_dict(self):
+        pass
 
 
     @staticmethod
@@ -305,10 +309,18 @@ class Expression:
         splitted = add_extra_perrs(splitted)
         return classify(splitted).to_dict()
 
+pemdas = [
+    ['^'],
+    ['*', '/'],
+    ['+', '-'],
+    ['%'],
+    ['==', '!='],
+    ['not'],
+    ['and', 'or'],
+    ['=']
+]
+
 class SingleOperation:
-    pemdas = [
-        ['not']
-    ]
     operators = {
         'not': {
             'name': 'not',
@@ -342,15 +354,6 @@ class SingleOperation:
 
 
 class Operation:
-    pemdas = [
-        ['^'],
-        ['*', '/'],
-        ['+', '-'],
-        ['%'],
-        ['=='],
-        ['and', 'or'],
-        ['=']
-    ]
     operators = {
         '*': {
                 'name': 'mul',
@@ -398,6 +401,17 @@ class Operation:
         },
         '==': {
             'name': 'equal',
+            'types': [
+                Int,
+                Float,
+                Range,
+                Bool,
+                BuiltInFunction,
+                Var
+            ]
+        },
+        '!=': {
+            'name': 'notequal',
             'types': [
                 Int,
                 Float,
@@ -510,13 +524,16 @@ class Parser:
         ForLoop,
         IfStatement
     ]
-    def __init__(self, codetext, indent='    '):
-        self.codetext = codetext
+    def __init__(self, file, indent='    '):
+        self.file = file
+        self.codetext = open(file).read()
         self.indent = indent
         self.parsed = None
 
     def parse(self):
         global line_num
+        global file
+        file = self.file
         self.parsed = []
         spot = [self.parsed]
         line_num = 1
@@ -544,14 +561,3 @@ class Parser:
 
             line_num += 1
         return self.parsed
-
-
-files = glob('*.🐮🦬')
-files.extend(glob('*.🦬🐮'))
-files.extend(glob('*.🔥🦬'))
-files.extend(glob('*.cb'))
-files.extend(glob('*.fb'))
-for file in files:
-    print(Parser(open(file).read()).parse())
-    interp = interpreter.Interpreter(Parser(open(file).read()).parse())
-    interp.run()
