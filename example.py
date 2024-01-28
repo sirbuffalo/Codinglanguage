@@ -4,7 +4,7 @@
 parse = [
     # setting times to 10
     {
-        'type': 'set var',
+        'type': 'setvar',
         'name': 'times',
         'value': {
             'type': 'int',
@@ -28,7 +28,7 @@ parse = [
                     'value': 1
                 },
                 'value2': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'times'
                 }
             }
@@ -38,7 +38,7 @@ parse = [
             {
                 'type': 'print',
                 'value': {
-                    'type': 'get var',
+                    'type': 'getvar',
                     'name': 'index'
                 }
             }
