@@ -9,6 +9,7 @@ import shutil
 def get_indexes(l, *args):
     return [i for i, e in enumerate(l) if e in args]
 
+
 def error(text):
     spaces = ' ' * (shutil.get_terminal_size().columns - len(text) - len(file) - len(str(line_num)) - 10)
     print(f'\033[38;5;52m\033[48;5;9m▲ Error: {text}{spaces}{file}\033[38;5;255m:\033[38;5;52m{line_num}\033[0m')
@@ -182,6 +183,8 @@ class Range:
 
     @staticmethod
     def valid(value):
+        if len(value.strip()) < 7:
+            return False
         if value[0] != '[':
             return False
         if value[-1] != ']':
@@ -198,6 +201,39 @@ class Range:
                 return True
         else:
             return False
+
+class List:
+    def __init__(self, value):
+        if not List.valid(value):
+            error('Invalid List')
+        self.values = ['']
+        bracs = 0
+        for char in value.strip()[1:-1]:
+            if char == '[':
+                bracs += 1
+            elif char == ']':
+                bracs -= 1
+            elif bracs == 0 and char == ',':
+                self.values.append('')
+            elif bracs == 0:
+                self.value[-1] += char
+
+
+    @staticmethod
+    def valid(value):
+        if not (value.strip()[0] == '[' and value.strip()[-1] == ']'):
+            return False
+        bracs = 0
+        for char in value.strip()[1:-1]:
+            if char == '[':
+                bracs += 1
+            elif char == ']':
+                bracs += 1
+            if bracs < 0:
+                return False
+        return True
+
+
 
 
 class Expression:
@@ -234,23 +270,24 @@ class Expression:
                         splitted.append(Expression(self.expression[start + 1:i]).to_list())
                         start = i + 1
                         break
-            if start == len(self.expression.strip()):
-                break
-            for end in range(len(self.expression), 0, -1):
-                if self.expression[start:end].strip() in SingleOperation.operators:
-                    splitted.append(self.expression[start:end].strip())
-                    start = end
-            for end in range(len(self.expression), 0, -1):
-                for data_type in Expression.data_types:
-                    if data_type.valid(self.expression[start:end].strip()):
+            else:
+                if start == len(self.expression.strip()):
+                    break
+                for end in range(len(self.expression), 0, -1):
+                    if self.expression[start:end].strip() in SingleOperation.operators:
                         splitted.append(self.expression[start:end].strip())
                         start = end
-                        break
+                for end in range(len(self.expression), 0, -1):
+                    for data_type in Expression.data_types:
+                        if data_type.valid(self.expression[start:end].strip()):
+                            splitted.append(self.expression[start:end].strip())
+                            start = end
+                            break
+                    else:
+                        continue
+                    break
                 else:
-                    continue
-                break
-            else:
-                error('Could not find valid data type')
+                    error('Could not find valid data type')
             if start == len(self.expression.strip()):
                 break
             for end in range(len(self.expression), 0, -1):
@@ -259,6 +296,7 @@ class Expression:
                     start = end
                     break
             else:
+                print(self.expression[start:], splitted)
                 error('Could not find valid operation')
         return splitted
 
@@ -281,6 +319,8 @@ class SingleOperation:
             ]
         }
     }
+
+
     def __init__(self, text, value):
         self.operation = text
         self.value = value
@@ -303,8 +343,10 @@ class SingleOperation:
 
 class Operation:
     pemdas = [
+        ['^'],
         ['*', '/'],
         ['+', '-'],
+        ['%'],
         ['=='],
         ['and', 'or'],
         ['=']
@@ -326,6 +368,14 @@ class Operation:
                 'name': 'sub',
                 'types': [Int, Float, BuiltInFunction, Var]
             },
+        '^': {
+            'name': 'pow',
+            'types': [Int, Float, BuiltInFunction, Var]
+        },
+        '%' : {
+            'name': 'mod',
+            'types': [Int, Float, BuiltInFunction, Var]
+        },
         '=': {
             'name': 'set var',
             'type1': Var,
@@ -361,7 +411,7 @@ class Operation:
 
     def __init__(self, operation, value1, value2):
         if not Operation.valid(operation, value1, value2):
-            print(operation, value1, value2)
+            print(Operation.valid(operation, value1, value2), operation, value1, value2, line_num)
             raise Exception('test')
         self.operation = operation
         self.value1 = value1
@@ -409,31 +459,11 @@ class Operation:
             for data_type in data['types1']:
                 valids1.append(data_type)
         if 'type2' in data:
-            valids1.append(data['type2'])
+            valids2.append(data['type2'])
         if 'types2' in data:
             for data_type in data['types2']:
-                valids1.append(data_type)
-        for data_type in valids1:
-            if isinstance(value1, data_type):
-                break
-        else:
-            return False
-        for data_type in valids1:
-            if isinstance(value1, data_type):
-                break
-        else:
-            return False
-        for data_type in valids2:
-            if isinstance(value2, data_type):
-                break
-        else:
-            return False
-        for data_type in valids2:
-            if isinstance(value2, data_type):
-                break
-        else:
-            return False
-        return True
+                valids2.append(data_type)
+        return isinstance(value1, tuple(valids1)) and isinstance(value2, tuple(valids2))
 
 class ForLoop:
     def __init__(self, text):
@@ -455,10 +485,30 @@ class ForLoop:
     def valid(text):
         return bool(search('^for +[A-Za-z][A-Za-z0-9]* +of +.*', text))
 
+class IfStatement:
+    def __init__(self, text):
+        if not IfStatement.valid(text):
+            error('invalid if statement')
+        self.text = text
+        self.expression = Expression(text[2:].strip())
+
+    def to_dict(self):
+        code = []
+        return {
+            'type': 'if',
+            'cond': self.expression.to_dict(),
+            'code': code
+        }, code
+
+    @staticmethod
+    def valid(text):
+        return bool(search('^if +.*$', text))
+
 
 class Parser:
     commands = [
-        ForLoop
+        ForLoop,
+        IfStatement
     ]
     def __init__(self, codetext, indent='    '):
         self.codetext = codetext
@@ -478,6 +528,8 @@ class Parser:
                 indention += 1
             del spot[indention+1:]
             line = line[indention * len(self.indent):]
+            if line == '':
+                continue
             for command in Parser.commands:
                 if command.valid(line):
                     com_dict = command(line).to_dict()
