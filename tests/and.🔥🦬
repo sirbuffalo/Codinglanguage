@@ -1,0 +1,8 @@
+if True and True
+    print(1)
+if True and False
+    print(2)
+if False and True
+    print(3)
+if False and False
+    print(4)
