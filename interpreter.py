@@ -298,8 +298,8 @@ class Interpreter:
                 self._instrs(case['code'], vars)
                 return
 
-        if 'else' in instr:
-            self._instrs(instr['else'], vars)
+        if 'default' in instr:
+            self._instrs(instr['default'], vars)
 
     def _expr(self, expr, vars):
         if type(expr) is int:

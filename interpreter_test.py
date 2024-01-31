@@ -1519,7 +1519,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(15, vars['test1'].val)
 
-    def test_instr_switch_else(self):
+    def test_instr_switch_default(self):
         vars = {}
 
         # test1 = 7
@@ -1528,7 +1528,7 @@ class TestInterpreter(unittest.TestCase):
         #   test1 *= 2
         # case test1 == 5:
         #   test1 *= 3
-        # else:
+        # default:
         #   test1 *= 4
 
 
@@ -1605,7 +1605,7 @@ class TestInterpreter(unittest.TestCase):
                         ],
                     },
                 ],
-                'else': [
+                'default': [
                     {
                         'type': 'setvar',
                         'name': 'test1',
