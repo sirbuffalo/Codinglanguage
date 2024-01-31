@@ -1,3 +1,4 @@
-x = 1
-x += 1
-print(x)
+if False
+    print(1)
+else
+    print(2)

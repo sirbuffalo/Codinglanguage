@@ -1,11 +1,9 @@
 #!/usr/bin/python3
 
 from math import ceil
-from glob import glob
 from re import *
-import interpreter
 import shutil
-import sys
+
 
 def get_indexes(l, *args):
     return [i for i, e in enumerate(l) if e in args]
@@ -243,29 +241,36 @@ class List:
 class BuiltInMethod:
     methods = {
         'append': {
-            'object': 'target',
-            'inputs': {
-                'value': [
-                    Int,
-                    Float,
-                    Range,
-                    List,
-                    Bool,
-                    BuiltInFunction,
-                    Var
-                ]
-            }
+            'inputs': [
+                'value'
+            ]
         }
     }
-    def __init__(self, text):
+    def __init__(self, target, text):
         if not BuiltInMethod.valid(text):
             error('Invalid List')
+        self.target = target
         self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[1:-2]
-
-
+        self.args = ['']
+        perrs = 0
+        for char in text[len(self.method) + 2:-1]:
+            if char in ['(', '[']:
+                perrs += 1
+            elif char in [')', ']']:
+                perrs -= 1
+            elif perrs == 0 and char == ',':
+                self.args.append('')
+            if char != ',':
+                self.args[-1] += char
+        self.args = {BuiltInMethod.methods[self.method]['inputs'][i]: Expression(val).to_dict() for i, val in enumerate(self.args)}
 
     def to_dict(self):
-        pass
+        ans = {
+            'type': self.method,
+            'target': self.target,
+        }
+        ans.update(self.args)
+        return ans
 
     @staticmethod
     def valid(text):
@@ -336,6 +341,10 @@ class Expression:
                     break
                 else:
                     error('Could not find valid data type')
+                # if start != len(self.expression.strip()):
+                #     for end in range(len(self.expression), 0, -1):
+                #         if BuiltInMethod.valid(self.expression[start:end].strip()):
+
             if start == len(self.expression.strip()):
                 break
             for end in range(len(self.expression), 0, -1):
@@ -344,7 +353,6 @@ class Expression:
                     start = end
                     break
             else:
-                print(self.expression[start:], splitted)
                 error('Could not find valid operation')
         return splitted
 
@@ -419,7 +427,7 @@ class Operation:
             'name': 'pow',
             'types': [Int, Float, BuiltInFunction, Var]
         },
-        '%' : {
+        '%': {
             'name': 'mod',
             'types': [Int, Float, BuiltInFunction, Var]
         },
@@ -561,62 +569,85 @@ class Operation:
         return isinstance(value1, tuple(valids1)) and isinstance(value2, tuple(valids2))
 
 class ForLoop:
-    def __init__(self, text):
+    def __init__(self, text, parser):
         if not self.valid(text):
             error('For Loop Not Valid')
+        self.parser = parser
         self.var_name = findall('(?<=for) +[A-Za-z][A-Za-z0-9]* ', text)[0].strip()
         self.list = text[len(findall('^for +[A-Za-z][A-Za-z0-9]* +of +[^ ]', text)[0]) - 1:].strip()
 
-    def to_dict(self):
+    def do(self):
         code = []
-        return {
+        self.parser.spot[-1].append({
             'type': 'loop',
             'var': self.var_name,
             'list': Expression(self.list).to_dict(),
             'code': code
-        }, code
+        })
+        self.parser.spot.append(code)
 
     @staticmethod
     def valid(text):
         return bool(search('^for +[A-Za-z][A-Za-z0-9]* +of +.*', text))
 
 class IfStatement:
-    def __init__(self, text):
+    def __init__(self, text, parser):
         if not IfStatement.valid(text):
             error('invalid if statement')
+        self.parser = parser
         self.text = text
-        self.expression = Expression(text[2:].strip())
+        self.expression = text[2:].strip()
 
-    def to_dict(self):
+    def do(self):
         code = []
-        return {
+        self.parser.spot[-1].append({
             'type': 'if',
-            'cond': self.expression.to_dict(),
+            'cond': Expression(self.expression).to_dict(),
             'code': code
-        }, code
+        })
+        self.parser.spot.append(code)
 
     @staticmethod
     def valid(text):
         return bool(search('^if +.*$', text))
 
 
+class ElseStatement:
+    def __init__(self, text, parser):
+        if not ElseStatement.valid(text):
+            error('invalid else statement')
+        self.parser = parser
+
+    def do(self):
+        code = []
+        self.parser.spot[-1][-1]['else'] = code
+        self.parser.spot.append(code)
+
+    @staticmethod
+    def valid(text):
+        return text == 'else'
+
+
 class Parser:
     commands = [
         ForLoop,
-        IfStatement
+        IfStatement,
+        ElseStatement
     ]
+
     def __init__(self, file, indent='    '):
         self.file = file
         self.codetext = open(file).read()
         self.indent = indent
         self.parsed = None
+        self.spot = None
 
     def parse(self):
         global line_num
         global file
         file = self.file
         self.parsed = []
-        spot = [self.parsed]
+        self.spot = [self.parsed]
         line_num = 1
         for line in self.codetext.split('\n'):
             indention = 0
@@ -624,21 +655,16 @@ class Parser:
                 if line[indention * len(self.indent):(indention + 1) * len(self.indent)] != self.indent:
                     break
                 indention += 1
-            del spot[indention+1:]
+            del self.spot[indention+1:]
             line = line[indention * len(self.indent):]
             if line == '':
                 continue
             for command in Parser.commands:
                 if command.valid(line):
-                    com_dict = command(line).to_dict()
-                    if isinstance(com_dict, tuple):
-                        spot[-1].append(com_dict[0])
-                        spot.append(com_dict[1])
-                    else:
-                        spot[-1].append(com_dict)
+                    command(line, self).do()
                     break
             else:
-                spot[-1].append(Expression(line).to_dict())
+                self.spot[-1].append(Expression(line).to_dict())
 
             line_num += 1
         return self.parsed
