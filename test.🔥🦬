@@ -1,4 +1,8 @@
-if False
+if True
     print(1)
-else
+elif True
     print(2)
+elif False
+    print(3)
+else
+    print(4)

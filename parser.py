@@ -601,7 +601,31 @@ class IfStatement:
     def do(self):
         code = []
         self.parser.spot[-1].append({
-            'type': 'if',
+            'type': 'switch',
+            'cases': [
+                {
+                    'cond': Expression(self.expression).to_dict(),
+                    'code': code
+                }
+            ]
+        })
+        self.parser.spot.append(code)
+
+    @staticmethod
+    def valid(text):
+        return bool(search('^if +.*$', text))
+
+
+class ElseIfStatement:
+    def __init__(self, text, parser):
+        if not ElseIfStatement.valid(text):
+            error('invalid elif statement')
+        self.parser = parser
+        self.expression = text[4:].strip()
+
+    def do(self):
+        code = []
+        self.parser.spot[-1][-1]['cases'].append({
             'cond': Expression(self.expression).to_dict(),
             'code': code
         })
@@ -609,7 +633,7 @@ class IfStatement:
 
     @staticmethod
     def valid(text):
-        return bool(search('^if +.*$', text))
+        return bool(search('^elif +.*$', text))
 
 
 class ElseStatement:
@@ -620,18 +644,19 @@ class ElseStatement:
 
     def do(self):
         code = []
-        self.parser.spot[-1][-1]['else'] = code
+        self.parser.spot[-1][-1]['default'] = code
         self.parser.spot.append(code)
 
     @staticmethod
     def valid(text):
-        return text == 'else'
+        return text.strip() == 'else'
 
 
 class Parser:
     commands = [
         ForLoop,
         IfStatement,
+        ElseIfStatement,
         ElseStatement
     ]
 
