@@ -1,11 +1,34 @@
 #!/usr/bin/python3
 
 import interpreter
+import io
+import sys
 import unittest
 
 class TestInterpreter(unittest.TestCase):
     def setUp(self):
         self._interp = interpreter.Interpreter([])
+        self._stdoutbuf = io.StringIO()
+        self._stdinbuf = io.StringIO()
+        self._realstdout = sys.stdout
+        self._realstdin = sys.stdin
+        sys.stdout = self._stdoutbuf
+        sys.stdin = self._stdinbuf
+
+    def tearDown(self):
+        sys.stdout = self._realstdout
+        sys.stdin = self._realstdin
+
+    def stdout(self):
+        val = self._stdoutbuf.getvalue()
+        self._stdoutbuf.truncate()
+        self._stdoutbuf.seek(0)
+        return val
+
+    def stdin(self, val):
+        loc = self._stdinbuf.tell()
+        self._stdinbuf.write(val)
+        self._stdinbuf.seek(loc)
 
     def test_expr_add(self):
         # 3 + 4
@@ -382,6 +405,21 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual(5, res.val)
+
+    def test_expr_input(self):
+        # input("foo")
+
+        self.stdin('bar\n')
+
+        res = self._interp._expr({
+            'type': 'input',
+            'prompt': {
+                'type': 'string',
+                'value': 'foo',
+            }
+        }, {})
+
+        self.assertEqual('bar', res.val)
 
     def test_expr_len(self):
         vars = {}
@@ -1379,6 +1417,8 @@ class TestInterpreter(unittest.TestCase):
             },
         ], {})
 
+        self.assertEqual('[1,2]\n', self.stdout())
+
     def test_instr_print_string(self):
         # test1 = "foo"
         # print(test1)
@@ -1400,6 +1440,8 @@ class TestInterpreter(unittest.TestCase):
                 },
             },
         ], {})
+
+        self.assertEqual('foo\n', self.stdout())
 
     def test_instr_subset(self):
         vars = {}
