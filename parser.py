@@ -349,7 +349,6 @@ class Expression:
                     error('Could not find valid data type')
                 for end in range(len(self.expression), 0, -1):
                     if BuiltInMethod.valid(self.expression[start:end].strip()):
-                        print('test')
                         splitted.append(self.expression[start:end].strip())
                         start = end
             if start == len(self.expression.strip()):
@@ -360,13 +359,11 @@ class Expression:
                     start = end
                     break
             else:
-                print(self.expression[start:])
                 error('Could not find valid operation')
         return splitted
 
     def to_dict(self):
         splitted = self.to_list()
-        print(splitted)
         splitted = add_extra_perrs(splitted)
         return classify(splitted).to_dict()
 
