@@ -1443,6 +1443,49 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual('foo\n', self.stdout())
 
+    def test_instr_remove(self):
+        vars = {}
+
+        # a = [3,4,5]
+        # a.remove(1)
+
+        val = self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'a',
+                'value': {
+                    'type': 'list',
+                    'values': [
+                        {
+                            'type': 'int',
+                            'value': 3,
+                        },
+                        {
+                            'type': 'int',
+                            'value': 4,
+                        },
+                        {
+                            'type': 'int',
+                            'value': 5,
+                        },
+                    ],
+                },
+            },
+            {
+                'type': 'remove',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'a',
+                },
+                'index': {
+                    'type': 'int',
+                    'value': 1,
+                },
+            }
+        ], vars)
+
+        self.assertEqual([3, 5], [x.val for x in vars['a'].iterate()])
+
     def test_instr_subset(self):
         vars = {}
 
