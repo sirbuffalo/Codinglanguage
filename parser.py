@@ -3,6 +3,7 @@
 from math import ceil
 from re import *
 import shutil
+import sys
 
 
 def get_indexes(l, *args):
@@ -11,8 +12,7 @@ def get_indexes(l, *args):
 
 def error(text):
     spaces = ' ' * (shutil.get_terminal_size().columns - len(text) - len(file) - len(str(line_num)) - 10)
-    print(f'\033[38;5;52m\033[48;5;9m▲ Error: {text}{spaces}{file}\033[38;5;255m:\033[38;5;52m{line_num}\033[0m')
-    exit(1)
+    raise Exception(f'\033[38;5;52m\033[48;5;9m▲ Error: {text}{spaces}{file}\033[38;5;255m:\033[38;5;52m{line_num}\033[0m')
 
 
 def add_extra_perrs(splitted):

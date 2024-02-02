@@ -3,22 +3,33 @@
 import difflib
 import glob
 import io
+import os.path
 import sys
 from interpreter import Interpreter
 from parser import Parser
 
-stdoutbuf = io.StringIO()
-sys.stdout = stdoutbuf
-
 for filename in glob.glob('tests/*.🔥🦬'):
+    stdinbuf = io.StringIO()
+    stdoutbuf = io.StringIO()
+    sys.stdin = stdinbuf
+    sys.stdout = stdoutbuf
+
     print(f'{filename}: ', end='', file=sys.stderr)
-    parsed = Parser(filename).parse()
-    interp = Interpreter(parsed)
-    interp.run()
+
+    if os.path.exists(f'{filename}.input'):
+        inp = open(f'{filename}.input').read()
+        stdinbuf.write(inp)
+        stdinbuf.seek(0)
+
+    try:
+        parsed = Parser(filename).parse()
+        interp = Interpreter(parsed)
+        interp.run()
+    except Exception as e:
+        print(f'ERROR: {e}', file=sys.stderr)
+        continue
 
     actual = stdoutbuf.getvalue()
-    stdoutbuf.truncate(0)
-    stdoutbuf.seek(0)
 
     expected = open(f'{filename}.expected').read()
 
