@@ -171,6 +171,7 @@ class Interpreter:
             'func': self._func,
             'getvar': self._getvar,
             'int': self._int,
+            'input': self._input,
             'join': self._join,
             'len': self._len,
             'list': self._list,
@@ -359,6 +360,13 @@ class Interpreter:
 
     def _int(self, expr, vars):
         return Int(int(self._expr(expr['value'], vars).val))
+
+    def _input(self, expr, vars):
+        prompt = ''
+        if 'prompt' in expr:
+            prompt = self._expr(expr['prompt'], vars).val
+
+        return String(input(prompt))
 
     def _join(self, expr, vars):
         target = self._expr(expr['target'], vars)
