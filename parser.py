@@ -24,7 +24,9 @@ def add_extra_perrs(splitted):
         return [splitted[0], add_extra_perrs(splitted[1])]
     if len(splitted) == 1:
         return add_extra_perrs(splitted[0])
-
+    for i, x in enumerate(splitted):
+        if x[0] == '.':
+            splitted[x - 1: x + 1] = [[splitted[x - 1: x + 1]]]
     for opers in pemdas:
         minus = 0
         for i in get_indexes(splitted, *opers):
@@ -47,14 +49,18 @@ def classify(splitted):
     if len(splitted) == 1:
         return classify(splitted[0])
     if len(splitted) == 2:
-        return SingleOperation(splitted[0], classify(splitted[1]))
+        if splitted[1][0] == '.':
+            return BuiltInMethod(splitted[0], splitted[1])
+        else:
+            return SingleOperation(splitted[0], classify(splitted[1]))
     if len(splitted) != 3:
         raise Exception("len(splitted) != 3")
     return Operation(splitted[1], classify(splitted[0]), classify(splitted[2]))
 
 class BuiltInFunction:
     functions = {
-        'print': ['value']
+        'print': ['value'],
+        'input': ['prompt']
     }
 
     def __init__(self, text):
@@ -250,7 +256,7 @@ class BuiltInMethod:
         if not BuiltInMethod.valid(text):
             error('Invalid List')
         self.target = target
-        self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[1:-2]
+        self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[0][1:-1]
         self.args = ['']
         perrs = 0
         for char in text[len(self.method) + 2:-1]:
@@ -267,7 +273,7 @@ class BuiltInMethod:
     def to_dict(self):
         ans = {
             'type': self.method,
-            'target': self.target,
+            'target': classify(self.target).to_dict()
         }
         ans.update(self.args)
         return ans
@@ -275,7 +281,7 @@ class BuiltInMethod:
     @staticmethod
     def valid(text):
         if search('^.[a-zA-Z][a-zA-Z0-9]*\(.*\)$', text):
-            method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[1:-2]
+            method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[0][1:-1]
             if method in BuiltInMethod.methods:
                 perrs = 0
                 for char in text[len(method) + 1:]:
@@ -341,10 +347,11 @@ class Expression:
                     break
                 else:
                     error('Could not find valid data type')
-                # if start != len(self.expression.strip()):
-                #     for end in range(len(self.expression), 0, -1):
-                #         if BuiltInMethod.valid(self.expression[start:end].strip()):
-
+                for end in range(len(self.expression), 0, -1):
+                    if BuiltInMethod.valid(self.expression[start:end].strip()):
+                        print('test')
+                        splitted.append(self.expression[start:end].strip())
+                        start = end
             if start == len(self.expression.strip()):
                 break
             for end in range(len(self.expression), 0, -1):
@@ -353,11 +360,13 @@ class Expression:
                     start = end
                     break
             else:
+                print(self.expression[start:])
                 error('Could not find valid operation')
         return splitted
 
     def to_dict(self):
         splitted = self.to_list()
+        print(splitted)
         splitted = add_extra_perrs(splitted)
         return classify(splitted).to_dict()
 
