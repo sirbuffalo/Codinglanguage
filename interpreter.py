@@ -27,6 +27,9 @@ class Bool(Variable):
     def or_(self, other):
         return Bool(self.val or other.val)
 
+    def xor(self, other):
+        return Bool(self.val != other.val)
+
 class Iterable(Variable):
     def string(self):
         joined = ','.join(x.string() for x in self.iterate())
@@ -99,6 +102,12 @@ class Int(Number):
             return Float(self.val).pow(other)
         else:
             return type(self)(pow(self.val, other.val))
+
+    def sub(self, other):
+        if isinstance(other, Float):
+            return Float(self.val).sub(other)
+        else:
+            return type(self)(self.val - other.val)
 
     def sub(self, other):
         if isinstance(other, Float):
@@ -188,6 +197,7 @@ class Interpreter:
             'string': self._string,
             'sub': self._sub,
             'subscript': self._subscript,
+            'xor': self._xor,
         }
 
         self._instrTypes = {
@@ -441,3 +451,8 @@ class Interpreter:
         target = self._expr(expr['target'], vars)
         index = self._expr(expr['index'], vars)
         return target.subscript(index)
+
+    def _xor(self, expr, vars):
+        v1 = self._expr(expr['value1'], vars)
+        v2 = self._expr(expr['value2'], vars)
+        return v1.xor(v2)

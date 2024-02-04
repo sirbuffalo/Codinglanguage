@@ -853,6 +853,40 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual('a', vars['test2'].val)
 
+    def test_expr_xor_false(self):
+        # true and true
+
+        res = self._interp._expr({
+            'type': 'xor',
+            'value1': {
+                'type': 'bool',
+                'value': True,
+            },
+            'value2': {
+                'type': 'bool',
+                'value': True,
+            },
+        }, {})
+
+        self.assertEqual(False, res.val)
+
+    def test_expr_xor_true(self):
+        # true and false
+
+        res = self._interp._expr({
+            'type': 'xor',
+            'value1': {
+                'type': 'bool',
+                'value': True,
+            },
+            'value2': {
+                'type': 'bool',
+                'value': False,
+            },
+        }, {})
+
+        self.assertEqual(True, res.val)
+
     def test_instr_addset(self):
         vars = {}
 
