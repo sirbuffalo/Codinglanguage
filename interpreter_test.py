@@ -47,7 +47,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
-    def test_expr_floatint(self):
+    def test_expr_add_floatint(self):
         # 3.0 + 4
 
         res = self._interp._expr({
@@ -64,7 +64,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7.0, res.val)
 
-    def test_expr_intfloat(self):
+    def test_expr_add_intfloat(self):
         # 3 + 4.0
 
         res = self._interp._expr({
@@ -313,6 +313,19 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(1.5, res.val)
 
+    def test_expr_float_from_int(self):
+        # float(5)
+
+        res = self._interp._expr({
+            'type': 'float',
+            'value': {
+                'type': 'int',
+                'value': 5,
+            },
+        }, {})
+
+        self.assertEqual(5.0, res.val)
+
     def test_expr_get_var(self):
         # test1
 
@@ -389,6 +402,19 @@ class TestInterpreter(unittest.TestCase):
         res = self._interp._expr({
             'type': 'int',
             'value': 5,
+        }, {})
+
+        self.assertEqual(5, res.val)
+
+    def test_expr_int_from_float(self):
+        # int(5.2)
+
+        res = self._interp._expr({
+            'type': 'int',
+            'value': {
+                'type': 'float',
+                'value': '5.2',
+            },
         }, {})
 
         self.assertEqual(5, res.val)
