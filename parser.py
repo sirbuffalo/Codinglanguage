@@ -1,9 +1,9 @@
 #!/usr/bin/python3
 
-from math import ceil
-from re import *
 import shutil
-import sys
+from re import *
+
+from math import ceil
 
 
 def get_indexes(l, *args):
@@ -54,13 +54,16 @@ def classify(splitted):
         else:
             return SingleOperation(splitted[0], classify(splitted[1]))
     if len(splitted) != 3:
+        print(splitted)
         raise Exception("len(splitted) != 3")
     return Operation(splitted[1], classify(splitted[0]), classify(splitted[2]))
 
 class BuiltInFunction:
     functions = {
         'print': ['value'],
-        'input': ['prompt']
+        'input': ['prompt'],
+        'int': ['value'],
+        'float': ['value']
     }
 
     def __init__(self, text):
@@ -68,8 +71,18 @@ class BuiltInFunction:
             error('Not a Built in Function')
         self.text = text.strip()
         self.func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text)[0][:-1]
-        self.args = {BuiltInFunction.functions[self.func_name][i]: Expression(val).to_dict() for i, val in enumerate(text[len(self.func_name) + 1:-1].split(','))}
-
+        self.args = ['']
+        perrs = 0
+        for char in text[len(self.func_name) + 1:-1]:
+            if char in ['(', '[']:
+                perrs += 1
+            elif char in [')', ']']:
+                perrs -= 1
+            elif perrs == 0 and char == ',':
+                self.args.append('')
+            if char != ',' or perrs != 0:
+                self.args[-1] += char
+        self.args = {BuiltInFunction.functions[self.func_name][i]: Expression(val).to_dict() for i, val in enumerate(self.args)}
     def to_dict(self):
         ans = {
             'type': self.func_name
@@ -82,8 +95,7 @@ class BuiltInFunction:
         if search('^[A-Za-z][A-Za-z0-9]*\(.*\)$', text.strip()):
             func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text.strip())[0][:-1]
             if func_name in BuiltInFunction.functions:
-                if len(text.strip()[len(func_name) + 1:-1].split(',')) == len(BuiltInFunction.functions[func_name]):
-                    return True
+                return True
         return False
 
 class Bool:
@@ -211,15 +223,15 @@ class List:
         if not List.valid(value):
             error('Invalid List')
         self.values = ['']
-        bracs = 0
+        perrs = 0
         for char in value.strip()[1:-1]:
-            if char == '[':
-                bracs += 1
-            elif char == ']':
-                bracs -= 1
-            elif bracs == 0 and char == ',':
+            if char in ['[', '(']:
+                perrs += 1
+            elif char in [']', ')']:
+                perrs -= 1
+            elif perrs == 0 and char == ',':
                 self.values.append('')
-            elif bracs == 0:
+            if char != ',' or perrs != 0:
                 self.values[-1] += char
         self.values = [Expression(exp).to_dict() for exp in self.values]
 
@@ -254,7 +266,7 @@ class BuiltInMethod:
     }
     def __init__(self, target, text):
         if not BuiltInMethod.valid(text):
-            error('Invalid List')
+            error('Invalid Method')
         self.target = target
         self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[0][1:-1]
         self.args = ['']
@@ -266,7 +278,7 @@ class BuiltInMethod:
                 perrs -= 1
             elif perrs == 0 and char == ',':
                 self.args.append('')
-            if char != ',':
+            if char != ',' or perrs != 0:
                 self.args[-1] += char
         self.args = {BuiltInMethod.methods[self.method]['inputs'][i]: Expression(val).to_dict() for i, val in enumerate(self.args)}
 
@@ -359,6 +371,7 @@ class Expression:
                     start = end
                     break
             else:
+                print(self.expression)
                 error('Could not find valid operation')
         return splitted
 
@@ -688,6 +701,8 @@ class Parser:
                 indention += 1
             del self.spot[indention+1:]
             line = line[indention * len(self.indent):]
+            if '#' in line:
+                line = line[:line.index('#')]
             if line == '':
                 continue
             for command in Parser.commands:
