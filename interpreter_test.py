@@ -47,7 +47,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7, res.val)
 
-    def test_expr_floatint(self):
+    def test_expr_add_floatint(self):
         # 3.0 + 4
 
         res = self._interp._expr({
@@ -64,7 +64,7 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7.0, res.val)
 
-    def test_expr_intfloat(self):
+    def test_expr_add_intfloat(self):
         # 3 + 4.0
 
         res = self._interp._expr({
@@ -269,6 +269,26 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(2.5, res.val)
 
+    def test_expr_div_float_cast(self):
+        # float(3) / 12
+
+        res = self._interp._expr({
+            'type': 'div',
+            'value1': {
+                'type': 'float',
+                'value': {
+                    'type': 'int',
+                    'value': 3,
+                },
+            },
+            'value2': {
+                'type': 'int',
+                'value': 12,
+            },
+        }, {})
+
+        self.assertEqual(0.25, res.val)
+
     def test_expr_equal_false(self):
         # 5 == 6
 
@@ -312,6 +332,19 @@ class TestInterpreter(unittest.TestCase):
         }, {})
 
         self.assertEqual(1.5, res.val)
+
+    def test_expr_float_from_int(self):
+        # float(5)
+
+        res = self._interp._expr({
+            'type': 'float',
+            'value': {
+                'type': 'int',
+                'value': 5,
+            },
+        }, {})
+
+        self.assertEqual(5.0, res.val)
 
     def test_expr_get_var(self):
         # test1
@@ -389,6 +422,19 @@ class TestInterpreter(unittest.TestCase):
         res = self._interp._expr({
             'type': 'int',
             'value': 5,
+        }, {})
+
+        self.assertEqual(5, res.val)
+
+    def test_expr_int_from_float(self):
+        # int(5.2)
+
+        res = self._interp._expr({
+            'type': 'int',
+            'value': {
+                'type': 'float',
+                'value': '5.2',
+            },
         }, {})
 
         self.assertEqual(5, res.val)
@@ -1442,6 +1488,49 @@ class TestInterpreter(unittest.TestCase):
         ], {})
 
         self.assertEqual('foo\n', self.stdout())
+
+    def test_instr_remove(self):
+        vars = {}
+
+        # a = [3,4,5]
+        # a.remove(1)
+
+        val = self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'a',
+                'value': {
+                    'type': 'list',
+                    'values': [
+                        {
+                            'type': 'int',
+                            'value': 3,
+                        },
+                        {
+                            'type': 'int',
+                            'value': 4,
+                        },
+                        {
+                            'type': 'int',
+                            'value': 5,
+                        },
+                    ],
+                },
+            },
+            {
+                'type': 'remove',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'a',
+                },
+                'index': {
+                    'type': 'int',
+                    'value': 1,
+                },
+            }
+        ], vars)
+
+        self.assertEqual([3, 5], [x.val for x in vars['a'].iterate()])
 
     def test_instr_subset(self):
         vars = {}

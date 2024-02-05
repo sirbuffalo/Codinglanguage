@@ -48,6 +48,9 @@ class List(Iterable):
     def len(self):
         return Int(len(self.val))
 
+    def remove(self, index):
+        self.val.pop(index)
+
     def subscript(self, index):
         return self.val[index.val]
 
@@ -198,6 +201,7 @@ class Interpreter:
             'mulset': self._mulset,
             'powset': self._powset,
             'print': self._print,
+            'remove': self._remove,
             'return': self._return,
             'setvar': self._setvar,
             'subset': self._subset,
@@ -278,6 +282,11 @@ class Interpreter:
 
     def _print(self, instr, vars):
         print(self._expr(instr['value'], vars).string())
+
+    def _remove(self, instr, vars):
+        target = self._expr(instr['target'], vars)
+        index = self._expr(instr['index'], vars)
+        target.remove(index.val)
 
     def _return(self, instr, vars):
         return self._expr(instr['value'], vars)
