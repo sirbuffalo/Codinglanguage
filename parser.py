@@ -302,6 +302,7 @@ class BuiltInMethod:
             ]
         }
     }
+
     def __init__(self, target, text):
         if not BuiltInMethod.valid(text):
             error('Invalid Method')
