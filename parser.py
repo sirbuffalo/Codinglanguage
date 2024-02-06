@@ -50,7 +50,7 @@ def classify(splitted):
         return classify(splitted[0])
     if len(splitted) == 2:
         if splitted[1]['type'] == 'method':
-            return BuiltInMethod(splitted[0], splitted[1])
+            return BuiltInMethod(splitted[0], splitted[1]['text'])
         elif splitted[1]['type'] == 'subscript':
             return SubScript(classify(splitted[0]), splitted[1]['text'])
         else:
@@ -297,8 +297,26 @@ class SubScript:
 class BuiltInMethod:
     methods = {
         'append': {
+            'type': 'append',
             'inputs': [
                 'value'
+            ]
+        },
+        'insert': {
+            'type': 'insert',
+            'inputs': [
+                'index',
+                'value'
+            ]
+        },
+        'length': {
+            'type': 'len',
+            'inputs': []
+        },
+        'remove': {
+            'type': 'remove',
+            'inputs': [
+                'index'
             ]
         }
     }
@@ -308,7 +326,11 @@ class BuiltInMethod:
             error('Invalid Method')
         self.target = target
         self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[0][1:-1]
-        self.args = ['']
+        self.type = BuiltInMethod.methods[self.method]['type']
+        if BuiltInMethod.methods[self.method]['inputs'] != []:
+            self.args = ['']
+        else:
+            self.args = []
         perrs = 0
         for char in text[len(self.method) + 2:-1]:
             if char in ['(', '[']:
@@ -323,7 +345,7 @@ class BuiltInMethod:
 
     def to_dict(self):
         ans = {
-            'type': self.method,
+            'type': self.type,
             'target': classify(self.target).to_dict()
         }
         ans.update(self.args)
