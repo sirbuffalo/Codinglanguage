@@ -819,6 +819,47 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(2, vars['test2'].val)
 
+    def test_expr_subscript_range(self):
+        vars = {}
+
+        # test1 = 2..10
+        # test2 = test[4]
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'range',
+                    'start': {
+                        'type': 'int',
+                        'value': 2,
+                    },
+                    'end': {
+                        'type': 'int',
+                        'value': 10,
+                    },
+                },
+            },
+            {
+                'type': 'setvar',
+                'name': 'test2',
+                'value': {
+                    'type': 'subscript',
+                    'target': {
+                        'type': 'getvar',
+                        'name': 'test1',
+                    },
+                    'index': {
+                        'type': 'int',
+                        'value': 4,
+                    },
+                },
+            },
+        ], vars)
+
+        self.assertEqual(6, vars['test2'].val)
+
     def test_expr_subscript_string(self):
         vars = {}
 
