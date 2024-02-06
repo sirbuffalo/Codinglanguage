@@ -13,6 +13,7 @@ args = ap.parse_args()
 for filename in args.filename:
     parsed = Parser(filename).parse()
     if args.parsed:
-        print(f'{filename}: {json.dumps(parsed, indent=4)}')
+        print(parsed)
+        # print(f'{filename}: {json.dumps(parsed, indent=4)}')
     interp = Interpreter(parsed)
     interp.run()
