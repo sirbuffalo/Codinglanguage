@@ -327,7 +327,7 @@ class BuiltInMethod:
         self.target = target
         self.method = findall('^.[a-zA-Z][a-zA-Z0-9]*\(', text)[0][1:-1]
         self.type = BuiltInMethod.methods[self.method]['type']
-        if BuiltInMethod.methods[self.method]['inputs'] != []:
+        if len(BuiltInMethod.methods[self.method]['inputs']) != 0:
             self.args = ['']
         else:
             self.args = []
