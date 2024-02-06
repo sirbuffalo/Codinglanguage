@@ -1,2 +1,2 @@
-print(12 or 3) # test
+print(12 / 3) # test
 

@@ -6,8 +6,8 @@ from re import *
 from math import ceil
 
 
-def get_indexes(l, *args):
-    return [i for i, e in enumerate(l) if e in args]
+def get_indexes(l, function):
+    return [i for i, e in enumerate(l) if function(e)]
 
 
 def error(text):
@@ -16,7 +16,7 @@ def error(text):
 
 
 def add_extra_perrs(splitted):
-    if type(splitted).__name__ == 'str':
+    if type(splitted).__name__ == 'dict':
         return splitted
     if len(splitted) == 3:
         return [add_extra_perrs(splitted[0]), splitted[1], add_extra_perrs(splitted[2])]
@@ -24,13 +24,15 @@ def add_extra_perrs(splitted):
         return [splitted[0], add_extra_perrs(splitted[1])]
     if len(splitted) == 1:
         return add_extra_perrs(splitted[0])
+    minus = 0
     for i, x in enumerate(splitted):
-        if x[0] == '.':
+        if x['type'] in ['method', 'subscript']:
             splitted[x - 1: x + 1] = [[splitted[x - 1: x + 1]]]
+            minus += 1
     for opers in pemdas:
         minus = 0
-        for i in get_indexes(splitted, *opers):
-            if splitted[i - minus] in SingleOperation.operators:
+        for i in get_indexes(splitted, lambda e: 'operation' in e and e['operation'] in opers):
+            if splitted[i - minus]['operation'] in SingleOperation.operators:
                 splitted[i + 1 - minus] = add_extra_perrs(splitted[i + 1 - minus])
                 splitted[i - minus:i + 2 - minus] = [[splitted[i - minus:i + 2 - minus]]]
                 minus += 1
@@ -42,21 +44,21 @@ def add_extra_perrs(splitted):
     return splitted
 
 def classify(splitted):
-    if type(splitted).__name__ == 'str':
-        for data_type in Expression.data_types:
-            if data_type.valid(splitted):
-                return data_type(splitted)
+    if type(splitted).__name__ == 'dict':
+        return splitted['datatype'](splitted['data'])
     if len(splitted) == 1:
         return classify(splitted[0])
     if len(splitted) == 2:
-        if splitted[1][0] == '.':
+        if splitted[1]['type'] == 'method':
             return BuiltInMethod(splitted[0], splitted[1])
+        elif splitted[1]['type'] == 'subscript':
+            return SubScript(classify(splitted[0]), splitted[1]['text'])
         else:
-            return SingleOperation(splitted[0], classify(splitted[1]))
+            return SingleOperation(splitted[0]['operation'], classify(splitted[1]))
     if len(splitted) != 3:
         print(splitted)
         raise Exception("len(splitted) != 3")
-    return Operation(splitted[1], classify(splitted[0]), classify(splitted[2]))
+    return Operation(splitted[1]['operation'], classify(splitted[0]), classify(splitted[2]))
 
 class BuiltInFunction:
     functions = {
@@ -208,15 +210,17 @@ class Range:
         if '...' not in value[1:-1]:
             return False
         brackets = 0
+        found_dots = False
         for i, char in enumerate(value[1:-1]):
             if char == '[':
                 brackets += 1
             elif char == ']':
                 brackets -= 1
+            if brackets < 0:
+                return False
             elif brackets == 0 and value[i:i + 3] == '...':
-                return True
-        else:
-            return False
+                found_dots = True
+        return found_dots
 
 class List:
     def __init__(self, value):
@@ -250,10 +254,44 @@ class List:
             if char == '[':
                 bracs += 1
             elif char == ']':
-                bracs += 1
+                bracs -= 1
             if bracs < 0:
                 return False
         return True
+
+class SubScript:
+    def __init__(self, target, text):
+        if not SubScript.valid(text):
+            error('Not valid subscript')
+        self.text = text.strip()
+        self.target = target
+
+    def to_dict(self):
+        return {
+            'type': 'subscript',
+            'target': self.target.to_dict(),
+            'index': Expression(self.text[1:-1]).to_dict()
+        }
+
+    @staticmethod
+    def valid(text):
+        text = text.strip()
+        if not len(text) > 2:
+            return False
+        if not (text[0] == '[' and text[-1] == ']'):
+            return False
+        bracs = 0
+        for char in text[1:-1]:
+            if char == '[':
+                bracs += 1
+            if char == ']':
+                bracs
+            if bracs < 0:
+                return False
+        if bracs == 0:
+            return True
+        return False
+
 
 
 class BuiltInMethod:
@@ -264,6 +302,7 @@ class BuiltInMethod:
             ]
         }
     }
+
     def __init__(self, target, text):
         if not BuiltInMethod.valid(text):
             error('Invalid Method')
@@ -328,7 +367,10 @@ class Expression:
                 break
             for end in range(len(self.expression), 0, -1):
                 if self.expression[start:end].strip() in SingleOperation.operators:
-                    splitted.append(self.expression[start:end].strip())
+                    splitted.append({
+                        'type': 'single operation',
+                        'operation': self.expression[start:end].strip()
+                    })
                     start = end
             if self.expression[start] == '(':
                 perr = 0
@@ -346,12 +388,19 @@ class Expression:
                     break
                 for end in range(len(self.expression), 0, -1):
                     if self.expression[start:end].strip() in SingleOperation.operators:
-                        splitted.append(self.expression[start:end].strip())
+                        splitted.append({
+                            'type': 'single operation',
+                            'operation': self.expression[start:end].strip()
+                        })
                         start = end
                 for end in range(len(self.expression), 0, -1):
                     for data_type in Expression.data_types:
                         if data_type.valid(self.expression[start:end].strip()):
-                            splitted.append(self.expression[start:end].strip())
+                            splitted.append({
+                                'type': 'datatype',
+                                'data': self.expression[start:end].strip(),
+                                'datatype': data_type
+                            })
                             start = end
                             break
                     else:
@@ -359,19 +408,36 @@ class Expression:
                     break
                 else:
                     error('Could not find valid data type')
-                for end in range(len(self.expression), 0, -1):
-                    if BuiltInMethod.valid(self.expression[start:end].strip()):
-                        splitted.append(self.expression[start:end].strip())
-                        start = end
+                while True:
+                    for end in range(len(self.expression), 0, -1):
+                        if BuiltInMethod.valid(self.expression[start:end].strip()):
+                            splitted.append({
+                                'type': 'method',
+                                'text': self.expression[start:end].strip()
+                            })
+                            start = end
+                            break
+                        elif SubScript.valid(self.expression[start:end]):
+                            splitted.append({
+                                'type': 'subscript',
+                                'text': self.expression[start:end].strip()
+                            })
+                            start = end
+                            break
+                    else:
+                        break
             if start == len(self.expression.strip()):
                 break
             for end in range(len(self.expression), 0, -1):
                 if self.expression[start:end].strip() in Operation.operators.keys():
-                    splitted.append(self.expression[start:end].strip())
+                    splitted.append({
+                        'type': 'operation',
+                        'operation': self.expression[start:end].strip()
+                    })
                     start = end
                     break
             else:
-                print(self.expression)
+                print(splitted, self.expression)
                 error('Could not find valid operation')
         return splitted
 
