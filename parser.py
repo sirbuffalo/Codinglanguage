@@ -59,6 +59,53 @@ def classify(splitted):
         print(splitted)
         raise Exception("len(splitted) != 3")
     return Operation(splitted[1]['operation'], classify(splitted[0]), classify(splitted[2]))
+class FunctionCall:
+    def __init__(self, text):
+        if not FunctionCall.valid(text):
+            error('Not a Function')
+        self.text = text.strip()
+        self.func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text)[0][:-1]
+        self.args = ['']
+        perrs = 0
+        for char in text[len(self.func_name) + 1:-1]:
+            if char in ['(', '[']:
+                perrs += 1
+            elif char in [')', ']']:
+                perrs -= 1
+            elif perrs == 0 and char == ',':
+                self.args.append('')
+            if char != ',' or perrs != 0:
+                self.args[-1] += char
+        if self.args == ['']:
+            self.args = []
+        self.args = [Expression(x).to_dict() for x in self.args]
+
+    def to_dict(self):
+        return {
+            'type': 'call',
+            'target': {
+                'type': 'getvar',
+                'name': self.func_name
+            },
+            'args': self.args
+        }
+
+    @staticmethod
+    def valid(text):
+        if search('^[A-Za-z][A-Za-z0-9]*\(.*\)$', text.strip()):
+            func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text.strip())[0][:-1]
+            perrs = 0
+            for char in text.strip()[len(func_name) + 1:-1]:
+                if char == '(':
+                    perrs += 1
+                elif char == ')':
+                    perrs -= 1
+                if perrs < 0:
+                    return False
+            if perrs == 0:
+                return True
+        return False
+
 
 class BuiltInFunction:
     functions = {
@@ -73,7 +120,7 @@ class BuiltInFunction:
         if not BuiltInFunction.valid(text):
             error('Not a Built in Function')
         self.text = text.strip()
-        self.func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text)[0][:-1]
+        self.func_name = findall(r'^[A-Za-z][A-Za-z0-9]*\(', text)[0][:-1]
         self.args = ['']
         perrs = 0
         for char in text[len(self.func_name) + 1:-1]:
@@ -86,6 +133,7 @@ class BuiltInFunction:
             if char != ',' or perrs != 0:
                 self.args[-1] += char
         self.args = {BuiltInFunction.functions[self.func_name][i]: Expression(val).to_dict() for i, val in enumerate(self.args)}
+
     def to_dict(self):
         ans = {
             'type': self.func_name
@@ -98,7 +146,16 @@ class BuiltInFunction:
         if search('^[A-Za-z][A-Za-z0-9]*\(.*\)$', text.strip()):
             func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text.strip())[0][:-1]
             if func_name in BuiltInFunction.functions:
-                return True
+                perrs = 0
+                for char in text.strip()[len(func_name) + 1:-1]:
+                    if char == '(':
+                        perrs += 1
+                    elif char == ')':
+                        perrs -= 1
+                    if perrs < 0:
+                        return False
+                if perrs == 0:
+                    return True
         return False
 
 class Bool:
@@ -391,6 +448,7 @@ class Expression:
         String,
         Bool,
         BuiltInFunction,
+        FunctionCall,
         Var
     ]
 
@@ -766,12 +824,65 @@ class ElseStatement:
         return text.strip() == 'else'
 
 
+class Function:
+    def __init__(self, text, parser):
+        if not Function.valid(text):
+            error('invalid function')
+        text_without_keyword = text[3:].strip()
+        self.parser = parser
+        self.name = ''
+        for char in text_without_keyword:
+            if char == '(':
+                break
+            self.name += char
+        self.name = self.name.strip()
+        i = 0
+        for char in text_without_keyword:
+            i += 1
+            if char == '(':
+                break
+        self.args = [x[0] for x in findall(r'([a-zA-Z][a-zA-Z0-9]*) *($|,)', text_without_keyword[i:-1])]
+
+    def do(self):
+        code = []
+        self.parser.spot[-1].append({
+            'type': 'setvar',
+            'name': self.name,
+            'value': {
+                'type': 'func',
+                'args': self.args,
+                'code': code
+            }
+        })
+        self.parser.spot.append(code)
+
+    @staticmethod
+    def valid(text):
+        return search(r'fun +[a-zA-Z][a-zA-Z0-9]* *\(( *[a-zA-Z][a-zA-Z0-9]* *,)* *([a-zA-Z][a-zA-Z0-9]*)? *\) *', text)
+class Return:
+    def __init__(self, text, parser):
+        if not Return.valid(text):
+            error('not a valid return')
+        self.value = text[7:].strip()
+        self.parser = parser
+
+    def do(self):
+        self.parser.spot[-1].append({
+            'type': 'return',
+            'value': Expression(self.value).to_dict()
+        })
+
+    @staticmethod
+    def valid(text):
+        return text.startswith('return ')
 class Parser:
     commands = [
         ForLoop,
         IfStatement,
         ElseIfStatement,
-        ElseStatement
+        ElseStatement,
+        Return,
+        Function
     ]
 
     def __init__(self, file, indent='    '):
