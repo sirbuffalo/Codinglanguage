@@ -177,6 +177,61 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, vars['test3'].val)
 
+    def test_expr_return_void(self):
+        # test1 = func() {
+        #   return
+        #   print("B")
+        # }
+        # print("A")
+        # test1()
+        # print("C")
+
+        self._interp._instrs([
+            {
+                'type': 'setvar',
+                'name': 'test1',
+                'value': {
+                    'type': 'func',
+                    'args': [],
+                    'code': [
+                        {
+                            'type': 'return',
+                        },
+                        {
+                            'type': 'print',
+                            'value': {
+                                'type': 'string',
+                                'value': 'B',
+                            },
+                        },
+                    ],
+                },
+            },
+            {
+                'type': 'print',
+                'value': {
+                    'type': 'string',
+                    'value': 'A',
+                },
+            },
+            {
+                'type': 'call',
+                'target': {
+                    'type': 'getvar',
+                    'name': 'test1',
+                },
+            },
+            {
+                'type': 'print',
+                'value': {
+                    'type': 'string',
+                    'value': 'C',
+                },
+            },
+        ], {})
+
+        self.assertEqual('A\nC\n', self.stdout())
+
     def test_expr_func_kwargs(self):
         # func(test1, test2) { return test1 - test2 }(test2=3, 5)
 

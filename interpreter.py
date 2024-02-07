@@ -171,6 +171,9 @@ class Func(Variable):
 
         return ast._instrs(self.code, vars)
 
+class Void(Variable):
+    pass
+
 class Interpreter:
     def __init__(self, ast):
         self._ast = ast
@@ -235,7 +238,8 @@ class Interpreter:
             return self._instrTypes[instr['type']](instr, vars)
 
         if instr['type'] in self._exprTypes:
-            return self._exprTypes[instr['type']](instr, vars)
+            self._exprTypes[instr['type']](instr, vars)
+            return
 
         raise UnknownInstructionType(instr['type'])
 
@@ -302,7 +306,10 @@ class Interpreter:
         target.remove(index.val)
 
     def _return(self, instr, vars):
-        return self._expr(instr['value'], vars)
+        if 'value' in instr:
+            return self._expr(instr['value'], vars)
+        else:
+            return Void()
 
     def _setvar(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
