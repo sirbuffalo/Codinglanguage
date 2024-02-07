@@ -867,14 +867,19 @@ class Return:
         self.parser = parser
 
     def do(self):
-        self.parser.spot[-1].append({
-            'type': 'return',
-            'value': Expression(self.value).to_dict()
-        })
+        if self.value == '':
+            self.parser.spot[-1].append({
+                'type': 'return'
+            })
+        else:
+            self.parser.spot[-1].append({
+                'type': 'return',
+                'value': Expression(self.value).to_dict()
+            })
 
     @staticmethod
     def valid(text):
-        return text.startswith('return ')
+        return text.startswith('return')
 class Parser:
     commands = [
         ForLoop,
