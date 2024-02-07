@@ -66,6 +66,9 @@ class Range(Iterable):
         for i in range(self._start.val, self._end.val):
             yield Int(i)
 
+    def subscript(self, index):
+        return self._start.add(index)
+
 class Number(Variable):
     pass
 
