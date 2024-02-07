@@ -4,7 +4,7 @@ import shutil
 from re import *
 
 from math import ceil
-
+import codecs
 
 def get_indexes(l, function):
     return [i for i, e in enumerate(l) if function(e)]
@@ -65,7 +65,8 @@ class BuiltInFunction:
         'print': ['value'],
         'input': ['prompt'],
         'int': ['value'],
-        'float': ['value']
+        'float': ['value'],
+        'string': ['value']
     }
 
     def __init__(self, text):
@@ -155,7 +156,21 @@ class Int:
         except TypeError:
             return False
 
+class String:
+    def __init__(self, value):
+        if not String.valid(value):
+            error('invalid string')
+        self.value = codecs.decode(value[1:-1], 'unicode_escape')
 
+    def to_dict(self):
+        return {
+                'type': 'string',
+                'value': self.value,
+            }
+
+    @staticmethod
+    def valid(value):
+        return search(r'''^("|')(\\.|(?:(?!(\1|\\)).))*\1$''', value)
 class Float:
     def __init__(self, value):
         if not Float.valid(value):
@@ -221,6 +236,7 @@ class Range:
             elif brackets == 0 and value[i:i + 3] == '...':
                 found_dots = True
         return found_dots
+
 
 class List:
     def __init__(self, value):
@@ -291,7 +307,6 @@ class SubScript:
         if bracs == 0:
             return True
         return False
-
 
 
 class BuiltInMethod:
@@ -373,6 +388,7 @@ class Expression:
         Float,
         Range,
         List,
+        String,
         Bool,
         BuiltInFunction,
         Var
@@ -541,7 +557,7 @@ class Operation:
         '=': {
             'name': 'setvar',
             'type1': Var,
-            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'types2': Expression.data_types,
             'name1': 'name',
             'name2': 'value',
             'prop1': ['name']
@@ -549,73 +565,64 @@ class Operation:
         '*=': {
             'name': 'mulset',
             'type1': Var,
-            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'types2': [Int, Float, BuiltInFunction, Var],
             'name1': 'target',
             'name2': 'value'
         },
         '/=': {
             'name': 'divset',
             'type1': Var,
-            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'types2': [Int, Float, BuiltInFunction, Var],
             'name1': 'target',
             'name2': 'value'
         },
         '+=': {
             'name': 'addset',
             'type1': Var,
-            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'types2': [Int, Float, BuiltInFunction, Var],
             'name1': 'target',
             'name2': 'value'
         },
         '-=': {
             'name': 'subset',
             'type1': Var,
-            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'types2': [Int, Float, BuiltInFunction, Var],
             'name1': 'target',
             'name2': 'value'
         },
         '^=': {
             'name': 'powset',
             'type1': Var,
-            'types2': [Int, Float, Bool, Range, List, BuiltInFunction, Var],
+            'types2': [Int, Float, BuiltInFunction, Var],
+            'name1': 'target',
+            'name2': 'value'
+        },
+        '%=': {
+            'name': 'modset',
+            'type1': Var,
+            'types2': [Int, Float, BuiltInFunction, Var],
             'name1': 'target',
             'name2': 'value'
         },
         'and': {
             'name': 'and',
-            'types': [
-                Bool, BuiltInFunction, Var
-            ]
+            'types': [Bool, BuiltInFunction, Var]
         },
         'or': {
             'name': 'or',
-            'types': [
-                Bool, BuiltInFunction, Var
-            ]
+            'types': [Bool, BuiltInFunction, Var]
         },
         '==': {
             'name': 'equal',
-            'types': [
-                Int,
-                Float,
-                Range,
-                List,
-                Bool,
-                BuiltInFunction,
-                Var
-            ]
+            'types': Expression.data_types
         },
         '!=': {
             'name': 'notequal',
-            'types': [
-                Int,
-                Float,
-                Range,
-                List,
-                Bool,
-                BuiltInFunction,
-                Var
-            ]
+            'types': Expression.data_types
+        },
+        'xor': {
+            'name': 'xor',
+            'types': [Bool, BuiltInFunction, Var]
         }
     }
 
