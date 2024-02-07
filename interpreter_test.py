@@ -949,6 +949,19 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual('a', vars['test2'].val)
 
+    def test_expr_typeof(self):
+        # typeof(34.6)
+
+        res = self._interp._expr({
+            'type': 'typeof',
+            'value': {
+                'type': 'float',
+                'value': 34.6,
+            },
+        }, {})
+
+        self.assertEqual('float', res.val)
+
     def test_expr_xor_false(self):
         # true and true
 

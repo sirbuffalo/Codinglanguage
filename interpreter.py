@@ -18,6 +18,9 @@ class Bool(Variable):
     def __init__(self, val):
         self.val = bool(val)
 
+    def typeof(self):
+        return String('bool')
+
     def and_(self, other):
         return Bool(self.val and other.val)
 
@@ -38,6 +41,9 @@ class Iterable(Variable):
 class List(Iterable):
     def __init__(self):
         self.val = []
+
+    def typeof(self):
+        return String('list')
 
     def iterate(self):
         return self.val
@@ -62,6 +68,9 @@ class Range(Iterable):
         self._start = start
         self._end = end
 
+    def typeof(self):
+        return String('range')
+
     def iterate(self):
         for i in range(self._start.val, self._end.val):
             yield Int(i)
@@ -75,6 +84,9 @@ class Number(Variable):
 class Int(Number):
     def __init__(self, val):
         self.val = int(val)
+
+    def typeof(self):
+        return String('int')
 
     def add(self, other):
         if isinstance(other, Float):
@@ -122,6 +134,9 @@ class Float(Number):
     def __init__(self, val):
         self.val = float(val)
 
+    def typeof(self):
+        return String('float')
+
     def add(self, other):
         return type(self)(self.val + float(other.val))
 
@@ -144,6 +159,9 @@ class String(Variable):
     def __init__(self, val):
         self.val = str(val)
 
+    def typeof(self):
+        return String('string')
+
     def subscript(self, index):
         return String(self.val[index.val])
 
@@ -154,6 +172,9 @@ class Func(Variable):
     def __init__(self, code, args):
         self.code = code
         self.args = args
+
+    def typeof(self):
+        return String('func')
 
     def call(self, args, kwargs, ast, vars):
         funcargs = list(self.args)
@@ -172,7 +193,8 @@ class Func(Variable):
         return ast._instrs(self.code, vars)
 
 class Void(Variable):
-    pass
+    def typeof(self):
+        return String('void')
 
 class Interpreter:
     def __init__(self, ast):
@@ -203,6 +225,7 @@ class Interpreter:
             'string': self._string,
             'sub': self._sub,
             'subscript': self._subscript,
+            'typeof': self._typeof,
             'xor': self._xor,
         }
 
@@ -461,6 +484,10 @@ class Interpreter:
         target = self._expr(expr['target'], vars)
         index = self._expr(expr['index'], vars)
         return target.subscript(index)
+
+    def _typeof(self, expr, vars):
+        val = self._expr(expr['value'], vars)
+        return val.typeof()
 
     def _xor(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
