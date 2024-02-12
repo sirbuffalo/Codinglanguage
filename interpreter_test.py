@@ -177,6 +177,59 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(6, vars['test3'].val)
 
+    def test_expr_func_conditional(self):
+        vars = {}
+
+        # func(test1) { if test1 == 5 { return 10 } return 1 }(5)
+
+        res = self._interp._expr({
+            'type': 'call',
+            'target': {
+                'type': 'func',
+                'args': ['test1'],
+                'code': [
+                    {
+                        'type': 'if',
+                        'cond': {
+                            'type': 'equal',
+                            'value1': {
+                                'type': 'getvar',
+                                'name': 'test1',
+                            },
+                            'value2': {
+                                'type': 'int',
+                                'value': 5,
+                            },
+                        },
+                        'code': [
+                            {
+                                'type': 'return',
+                                'value': {
+                                    'type': 'int',
+                                    'value': 10,
+                                },
+                            },
+                        ],
+                    },
+                    {
+                        'type': 'return',
+                        'value': {
+                            'type': 'int',
+                            'value': 1,
+                        },
+                    },
+                ],
+            },
+            'args': [
+                {
+                    'type': 'int',
+                    'value': 5,
+                },
+            ],
+        }, {})
+
+        self.assertEqual(10, res.val)
+
     def test_expr_return_void(self):
         # test1 = func() {
         #   return

@@ -7,6 +7,10 @@ class UnknownExpressionType(Exception):
 class UnknownInstructionType(Exception):
     pass
 
+class FunctionReturn(Exception):
+    def __init__(self, val):
+        self.val = val
+
 class Variable:
     def equal(self, other):
         return Bool(self.val == other.val)
@@ -252,13 +256,12 @@ class Interpreter:
 
     def _instrs(self, instrs, vars):
         for instr in instrs:
-            ret = self._instr(instr, vars)
-            if ret is not None:
-                return ret
+            self._instr(instr, vars)
 
     def _instr(self, instr, vars):
         if instr['type'] in self._instrTypes:
-            return self._instrTypes[instr['type']](instr, vars)
+            self._instrTypes[instr['type']](instr, vars)
+            return
 
         if instr['type'] in self._exprTypes:
             self._exprTypes[instr['type']](instr, vars)
@@ -330,9 +333,9 @@ class Interpreter:
 
     def _return(self, instr, vars):
         if 'value' in instr:
-            return self._expr(instr['value'], vars)
+            raise FunctionReturn(self._expr(instr['value'], vars))
         else:
-            return Void()
+            raise FunctionReturn(Void())
 
     def _setvar(self, instr, vars):
         vars[instr['name']] = self._expr(instr['value'], vars)
@@ -384,12 +387,16 @@ class Interpreter:
 
     def _call(self, expr, vars):
         target = self._expr(expr['target'], vars)
-        return target.call(
-            [self._expr(arg, vars) for arg in expr.get('args', [])],
-            {k: self._expr(v, vars) for k, v in expr.get('kwargs', {}).items()},
-            self,
-            vars,
-        )
+        try:
+            target.call(
+                [self._expr(arg, vars) for arg in expr.get('args', [])],
+                {k: self._expr(v, vars) for k, v in expr.get('kwargs', {}).items()},
+                self,
+                vars,
+            )
+            return Void()
+        except FunctionReturn as ret:
+            return ret.val
 
     def _div(self, expr, vars):
         v1 = self._expr(expr['value1'], vars)
