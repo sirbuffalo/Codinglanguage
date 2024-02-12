@@ -166,6 +166,9 @@ class String(Variable):
     def typeof(self):
         return String('string')
 
+    def add(self, val):
+        return String(self.val + str(val.val))
+
     def subscript(self, index):
         return String(self.val[index.val])
 

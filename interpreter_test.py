@@ -81,6 +81,23 @@ class TestInterpreter(unittest.TestCase):
 
         self.assertEqual(7.5, res.val)
 
+    def test_expr_add_string(self):
+        # "foo" + 4
+
+        res = self._interp._expr({
+            'type': 'add',
+            'value1': {
+                'type': 'string',
+                'value': 'foo',
+            },
+            'value2': {
+                'type': 'int',
+                'value': 4,
+            },
+        }, {})
+
+        self.assertEqual("foo4", res.val)
+
     def test_expr_and_false(self):
         # true and false
 
