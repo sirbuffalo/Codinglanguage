@@ -938,6 +938,7 @@ class Switch:
         self.parser.spot.append(code)
         self.parser.area_commands.append([])
         self.parser.spot_commands.append([Case])
+        # print(self.parser.spot_commands)
 
     @staticmethod
     def valid(text):
@@ -1043,6 +1044,5 @@ class Parser:
                     break
                 else:
                     self.spot[-1].append(Expression(line).to_dict())
-
             line_num += 1
-            return self.parsed
+        return self.parsed
