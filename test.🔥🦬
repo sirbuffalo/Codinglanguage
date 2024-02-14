@@ -1,5 +1,4 @@
-fun test(test1)
-    if test1 == 3
-        return 3
-    print(test1)
-test(3)
+switch
+    case True
+        print(1)
+    print(2)

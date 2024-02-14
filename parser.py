@@ -56,29 +56,42 @@ def classify(splitted):
         else:
             return SingleOperation(splitted[0]['operation'], classify(splitted[1]))
     if len(splitted) != 3:
-        print(splitted)
-        raise Exception("len(splitted) != 3")
+        error('len(splitted) != 3')
     return Operation(splitted[1]['operation'], classify(splitted[0]), classify(splitted[2]))
 class FunctionCall:
     def __init__(self, text):
         if not FunctionCall.valid(text):
             error('Not a Function')
         self.text = text.strip()
-        self.func_name = findall('^[A-Za-z][A-Za-z0-9]*\(', text)[0][:-1]
-        self.args = ['']
+        self.func_name = findall(r'^[A-Za-z][A-Za-z0-9]*\(', text)[0][:-1]
+        self.args = []
+        self.kwargs = {}
+        current = ''
         perrs = 0
         for char in text[len(self.func_name) + 1:-1]:
             if char in ['(', '[']:
                 perrs += 1
+                current += char
             elif char in [')', ']']:
                 perrs -= 1
-            elif perrs == 0 and char == ',':
-                self.args.append('')
-            if char != ',' or perrs != 0:
-                self.args[-1] += char
-        if self.args == ['']:
-            self.args = []
+                current += char
+            elif char == ',' and perrs == 0:
+                if '=' in current:
+                    arg_name, value = findall('^ *([a-zA-Z][a-zA-Z0-9]*) *= *(.*) *$', current)[0]
+                    self.kwargs[arg_name] = value
+                else:
+                    self.args.append(current.strip())
+                current = ''
+            else:
+                current += char
+        if current.strip() != '':
+            if '=' in current:
+                arg_name, value = findall('^ *([a-zA-Z][a-zA-Z0-9]*) *= *(.*) *$', current)[0]
+                self.kwargs[arg_name] = value
+            else:
+                self.args.append(current.strip())
         self.args = [Expression(x).to_dict() for x in self.args]
+        self.kwargs = {arg_name: Expression(value).to_dict() for arg_name, value in self.kwargs.items()}
 
     def to_dict(self):
         return {
@@ -87,7 +100,8 @@ class FunctionCall:
                 'type': 'getvar',
                 'name': self.func_name
             },
-            'args': self.args
+            'args': self.args,
+            'kwargs': self.kwargs
         }
 
     @staticmethod
@@ -113,7 +127,8 @@ class BuiltInFunction:
         'input': ['prompt'],
         'int': ['value'],
         'float': ['value'],
-        'string': ['value']
+        'string': ['value'],
+        'typeof': ['value']
     }
 
     def __init__(self, text):
@@ -299,18 +314,21 @@ class List:
     def __init__(self, value):
         if not List.valid(value):
             error('Invalid List')
-        self.values = ['']
-        perrs = 0
-        for char in value.strip()[1:-1]:
-            if char in ['[', '(']:
-                perrs += 1
-            elif char in [']', ')']:
-                perrs -= 1
-            elif perrs == 0 and char == ',':
-                self.values.append('')
-            if char != ',' or perrs != 0:
-                self.values[-1] += char
-        self.values = [Expression(exp).to_dict() for exp in self.values]
+        if value[1:-1].strip() != "":
+            self.values = ['']
+            perrs = 0
+            for char in value.strip()[1:-1]:
+                if char in ['[', '(']:
+                    perrs += 1
+                elif char in [']', ')']:
+                    perrs -= 1
+                elif perrs == 0 and char == ',':
+                    self.values.append('')
+                if char != ',' or perrs != 0:
+                    self.values[-1] += char
+            self.values = [Expression(exp).to_dict() for exp in self.values]
+        else:
+            self.values = []
 
     def to_dict(self):
         return {
@@ -757,6 +775,8 @@ class ForLoop:
             'code': code
         })
         self.parser.spot.append(code)
+        self.parser.spot_commands.append([])
+        self.parser.area_commands.append([])
 
     @staticmethod
     def valid(text):
@@ -772,6 +792,10 @@ class IfStatement:
 
     def do(self):
         code = []
+        if ElseStatement not in self.parser.spot_commands[-1]:
+            self.parser.spot_commands[-1].append(ElseStatement)
+        if ElseIfStatement not in self.parser.spot_commands[-1]:
+            self.parser.spot_commands[-1].append(ElseIfStatement)
         self.parser.spot[-1].append({
             'type': 'switch',
             'cases': [
@@ -781,6 +805,8 @@ class IfStatement:
                 }
             ]
         })
+        self.parser.spot_commands.append([])
+        self.parser.area_commands.append([])
         self.parser.spot.append(code)
 
     @staticmethod
@@ -802,6 +828,8 @@ class ElseIfStatement:
             'code': code
         })
         self.parser.spot.append(code)
+        self.parser.spot_commands.append([])
+        self.parser.area_commands.append([])
 
     @staticmethod
     def valid(text):
@@ -816,8 +844,13 @@ class ElseStatement:
 
     def do(self):
         code = []
+        if ElseStatement in self.parser.spot_commands[-1]:
+            self.parser.spot_commands[-1].remove(ElseStatement)
+        if ElseIfStatement in self.parser.spot_commands[-1]:
+            self.parser.spot_commands[-1].remove(ElseIfStatement)
         self.parser.spot[-1][-1]['default'] = code
         self.parser.spot.append(code)
+        self.parser.spot_commands.append([])
 
     @staticmethod
     def valid(text):
@@ -841,7 +874,33 @@ class Function:
             i += 1
             if char == '(':
                 break
-        self.args = [x[0] for x in findall(r'([a-zA-Z][a-zA-Z0-9]*) *($|,)', text_without_keyword[i:-1])]
+        self.args = []
+        self.kwargs = {}
+        current = ''
+        perrs = 0
+        for char in text_without_keyword[i:-1].strip():
+            if char in ['(', '[']:
+                perrs += 1
+                current += char
+            elif char in [')', ']']:
+                perrs -= 1
+                current += char
+            elif char == ',' and perrs == 0:
+                if '=' in current:
+                    arg_name, value = findall('^ *([a-zA-Z][a-zA-Z0-9]*) *= *(.*) *$', 'test=17')[0]
+                    self.kwargs[arg_name] = Expression(value).to_dict()
+                else:
+                    self.args.append(current.strip())
+                current = ''
+            else:
+                current += char
+        if current.strip() != '':
+            if '=' in current:
+                arg_name, value = findall('^ *([a-zA-Z][a-zA-Z0-9]*) *= *(.*) *$', 'test=17')[0]
+                self.kwargs[arg_name] = Expression(value).to_dict()
+            else:
+                self.args.append(current.strip())
+        # self.args = [x[0] for x in findall(r'([a-zA-Z][a-zA-Z0-9]*) *($|,)', text_without_keyword[i:-1])]
 
     def do(self):
         code = []
@@ -851,14 +910,61 @@ class Function:
             'value': {
                 'type': 'func',
                 'args': self.args,
+                'kwargs': self.kwargs,
                 'code': code
             }
         })
         self.parser.spot.append(code)
+        self.parser.area_commands.append([Return])
+        self.parser.spot_commands.append([])
 
     @staticmethod
     def valid(text):
-        return search(r'fun +[a-zA-Z][a-zA-Z0-9]* *\(( *[a-zA-Z][a-zA-Z0-9]* *,)* *([a-zA-Z][a-zA-Z0-9]*)? *\) *', text)
+        return search(r'fun +[a-zA-Z][a-zA-Z0-9]* *\(( *[a-zA-Z][a-zA-Z0-9]* *(=.*)? *,)* *([a-zA-Z][a-zA-Z0-9]* *(=.*)?)? *\) *', text)
+
+class Switch:
+    def __init__(self, text, parser):
+        if not Switch.valid(text):
+            error('Invalid Switch')
+        self.parser = parser
+
+    def do(self):
+        code = []
+        self.parser.spot[-1].append({
+            'type': 'switch',
+            'cases': [],
+            'default': code
+        })
+        self.parser.spot.append(code)
+        self.parser.area_commands.append([])
+        self.parser.spot_commands.append([Case])
+
+    @staticmethod
+    def valid(text):
+        return text.strip() == 'switch'
+
+
+class Case:
+    def __init__(self, text, parser):
+        if not Case.valid(text):
+            error('invalid case')
+        self.parser = parser
+        self.text = text
+        self.expression = text[4:].strip()
+
+    def do(self):
+        code = []
+        self.parser.spot[-2][-1]['cases'].append({
+            'cond': Expression(self.expression).to_dict(),
+            'code': code
+        })
+        self.parser.spot_commands.append([])
+        self.parser.area_commands.append([])
+        self.parser.spot.append(code)
+
+    @staticmethod
+    def valid(text):
+        return bool(search('^case +.*$', text))
 class Return:
     def __init__(self, text, parser):
         if not Return.valid(text):
@@ -879,18 +985,20 @@ class Return:
 
     @staticmethod
     def valid(text):
-        return text.startswith('return')
+        return text.strip().startswith('return ') or text.strip() == 'return'
+
+
 class Parser:
     commands = [
         ForLoop,
         IfStatement,
-        ElseIfStatement,
-        ElseStatement,
-        Return,
-        Function
+        Function,
+        Switch
     ]
 
     def __init__(self, file, indent='    '):
+        self.area_commands = None
+        self.spot_commands = None
         self.file = file
         self.codetext = open(file).read()
         self.indent = indent
@@ -903,6 +1011,8 @@ class Parser:
         file = self.file
         self.parsed = []
         self.spot = [self.parsed]
+        self.spot_commands = [[]]
+        self.area_commands = [Parser.commands]
         line_num = 1
         for line in self.codetext.split('\n'):
             indention = 0
@@ -910,18 +1020,29 @@ class Parser:
                 if line[indention * len(self.indent):(indention + 1) * len(self.indent)] != self.indent:
                     break
                 indention += 1
-            del self.spot[indention+1:]
+            del self.spot[indention + 1:]
+            del self.area_commands[indention + 1:]
+            del self.spot_commands[indention + 1:]
             line = line[indention * len(self.indent):]
             if '#' in line:
                 line = line[:line.index('#')]
             if line == '':
                 continue
-            for command in Parser.commands:
+            for command in self.spot_commands[indention]:
                 if command.valid(line):
                     command(line, self).do()
                     break
             else:
-                self.spot[-1].append(Expression(line).to_dict())
+                for commands in reversed(self.area_commands):
+                    for command in commands:
+                        if command.valid(line):
+                            command(line, self).do()
+                            break
+                    else:
+                        continue
+                    break
+                else:
+                    self.spot[-1].append(Expression(line).to_dict())
 
             line_num += 1
-        return self.parsed
+            return self.parsed
